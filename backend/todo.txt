@@ -1,0 +1,9 @@
+auth pages setup and fix 
+update the audio time to be 4 minutes max
+user's skin view and equip link up in the profile settings ( make it secrion to seee user skin , gift token , profile)
+cost for links 1 token backend and frontend
+prepare for beta testing
+add route to update delete for the flow endpoint
+create the frontends user and admin flow 
+lunch
+marketing

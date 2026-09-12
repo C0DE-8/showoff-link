@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echo Grid — Collective Sonic Canvas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090a0f;
+            --surface: rgba(20, 22, 31, 0.65);
+            --surface-border: rgba(168, 85, 247, 0.18);
+            --surface-hover: rgba(168, 85, 247, 0.08);
+            --accent: #a855f7;
+            --accent-glow: rgba(168, 85, 247, 0.35);
+            --accent-gradient: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --danger: #f43f5e;
+            --danger-glow: rgba(244, 63, 94, 0.3);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            background-color: var(--bg); 
+            color: var(--text-primary); 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(168, 85, 247, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(124, 58, 237, 0.1) 0%, transparent 45%);
+            background-attachment: fixed;
+        }
+
+        .container { 
+            width: 100%; 
+            max-width: 680px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 1.75rem; 
+        }
+
+        /* Glassmorphism Surface Base */
+        .glass-panel { 
+            background: var(--surface); 
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--surface-border); 
+            border-radius: 20px; 
+            padding: 2rem; 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: border-color 0.3s ease, transform 0.2s ease;
+        }
+
+        /* Typography Styles */
+        .brand-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .heading-md {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle { 
+            color: var(--text-secondary); 
+            font-size: 0.95rem; 
+            line-height: 1.6;
+            margin-bottom: 1.5rem; 
+        }
+
+        .token-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Modern UI Buttons */
+        .btn {
+            background: var(--accent-gradient); 
+            color: #ffffff; 
+            font-family: inherit;
+            font-weight: 600; 
+            font-size: 1rem;
+
+border: none;
+            padding: 1rem 1.5rem; 
+            border-radius: 14px; 
+            cursor: pointer; 
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .btn:hover:not(:disabled) { 
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px var(--accent-glow);
+            filter: brightness(1.1);
+        }
+
+        .btn:active:not(:disabled) { transform: translateY(0); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+        .btn-danger { 
+            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); 
+            box-shadow: 0 4px 20px var(--danger-glow);
+        }
+        .btn-danger:hover:not(:disabled) {
+            box-shadow: 0 8px 28px var(--danger-glow);
+        }
+
+        /* Studio Experience Component */
+        .studio-box { 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 1.5rem; 
+            align-items: center; 
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timer-badge { 
+            font-family: 'Space Grotesk', monospace;
+            font-size: 2rem; 
+            font-weight: 700; 
+            color: var(--accent); 
+            background: rgba(168, 85, 247, 0.08);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            padding: 0.4rem 1.2rem;
+            border-radius: 100px;
+            display: inline-block;
+            letter-spacing: 0.05em;
+            box-shadow: inset 0 0 12px rgba(168, 85, 247, 0.1);
+        }
+
+        .prompt-card { 
+            font-size: 1.25rem; 
+            font-weight: 500;
+            line-height: 1.5;
+            color: #ffffff; 
+            background: rgba(0, 0, 0, 0.4); 
+            border: 1px dashed var(--surface-border);
+            padding: 1.5rem; 
+            border-radius: 14px; 
+            width: 100%; 
+            position: relative;
+        }
+
+        .prompt-card::before {
+            content: 'YOUR PROMPT';
+            position: absolute;
+            top: -0.6rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg);
+            padding: 0 0.5rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+        }
+
+        .recorder-controls { display: flex; gap: 0.75rem; width: 100%; justify-content: center; }
+
+        /* Audio Element Styling Override */
+        audio { 
+            width: 100%; 
+            height: 42px;
+            border-radius: 10px;
+            filter: invert(0.9) hue-rotate(220deg);
+            margin-top: 0.5rem;
+        }
+
+        /* Feed / Wall Layout */
+        .feed-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .feed-item { 
+            background: rgba(10, 12, 18, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            padding: 1.25rem; 
+            transition: border-color 0.2s ease;
+        }
+
+        .feed-item:hover {
+            border-color: var(--surface-border);
+        }
+
+        .feed-item h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.15rem;
+            color: #fff;
+            margin-bottom: 0.25rem;
+        }
+
+        .feed-item p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .playlist { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.playlist-track { 
+            background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 0.85rem; 
+            border-radius: 10px; 
+            font-size: 0.875rem; 
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .playlist-track strong {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Responsive Tweaks */
+        @media (max-width: 480px) {
+            body { padding: 1rem 0.5rem; }
+            .glass-panel { padding: 1.5rem 1.25rem; border-radius: 16px; }
+            .brand-title { font-size: 1.75rem; }
+            .timer-badge { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Action Panel -->
+    <div class="glass-panel" id="reserve-section">
+        <h1 class="brand-title">Echo Grid</h1>
+        <p class="subtitle">
+            Imprint your voice onto the collective audio canvas. 
+            Claim a passage, record your fragment, and shape the story.
+        </p>
+        <button id="reserve-btn" class="btn">
+            <span>Claim Audio Passage</span>
+            <span class="token-badge">2 Tokens</span>
+        </button>
+    </div>
+
+    <!-- Recording Studio Card -->
+    <div class="glass-panel studio-box hidden" id="studio-section">
+        <div style="width: 100%;">
+            <span class="timer-badge" id="countdown">05:00</span>
+        </div>
+        
+        <div class="prompt-card" id="prompt-display">Decrypting prompt...</div>
+
+        <div class="recorder-controls">
+            <button id="record-btn" class="btn">Capture Voice</button>
+            <button id="stop-btn" class="btn btn-danger hidden">Halt Recording</button>
+        </div>
+
+        <audio id="audio-preview" controls class="hidden"></audio>
+        <button id="submit-btn" class="btn hidden">Publish Fragment</button>
+    </div>
+
+    <!-- Completed Wall -->
+    <div class="glass-panel">
+        <h2 class="heading-md">Live Stream Canvas</h2>
+        <p class="subtitle" style="margin-bottom: 1rem;">Explore continuous soundscapes crafted by the community.</p>
+        <div id="wall-container" class="feed-container">
+            <p style="color: var(--text-secondary); text-align: center; padding: 1rem;">Gathering frequencies...</p>
+        </div>
+    </div>
+</div>
+
+<script src="script/community.js"></script>
+</body>
+</html>

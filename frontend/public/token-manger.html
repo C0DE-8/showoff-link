@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Token Top-Up Management</title>
+  <style>
+    /* Base Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #090d16;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #f1f5f9;
+  min-height: 100vh;
+}
+
+/* Layout */
+.admin-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #1e293b;
+  margin-bottom: 32px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.badge-admin {
+  background: rgba(167, 139, 250, 0.15);
+  color: #a78bfa;
+  border: 1px solid #a78bfa;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+/* Card Styling */
+.card {
+  background: #111622;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.table-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.card-header {
+  margin-bottom: 20px;
+}
+
+.table-card .card-header {
+  padding: 24px;
+  margin-bottom: 0;
+  border-bottom: 1px solid #1e293b;
+}
+
+.card-header h3 {
+  font-size: 1.15rem;
+  color: #ffffff;
+}
+
+.card-header p {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Form Styling */
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.form-group input {
+  background: #171e2c;
+  border: 1px solid #283348;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: #a78bfa;
+}
+
+/* Metrics Stack */
+.metrics-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.metric-box {
+  background: #171e2c;
+  border: 1px solid #232d42;
+  padding: 16px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.metric-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.pending-color {
+  color: #f59e0b;
+}
+
+/* Table Styling */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 14px 20px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.data-table th {
+  background: #0f1420;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.data-table tr:hover {
+  background: #151c2b;
+}
+
+.text-center {
+  text-align: center;
+  color: #64748b;
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn-primary {
+  background: #a78bfa;
+  color: #0f172a;
+}
+
+.btn-secondary {
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #f1f5f9;
+}
+
+.btn-success {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+.action-group {
+  display: flex;
+  gap: 8px;
+}
+
+/* Toast System */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  animation: slideIn 0.3s ease-out;
+}
+
+.toast-success { background: #059669; }
+.toast-error { background: #dc2626; }
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal-card {
+  background: #111622;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  padding: 20px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.receipt-viewer img,
+.receipt-viewer iframe {
+  width: 100%;
+  max-height: 480px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+  </style>
+</head>
+<body>
+
+  <!-- Toast Notification Bar -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Modal Component for Viewing Receipts -->
+  <div id="receiptModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Transfer Receipt Verification</h3>
+        <button id="closeModalBtn" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="receiptViewer" class="receipt-viewer">
+          <!-- Dynamic rendering for Image or PDF -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-layout">
+    
+    <!-- Top Header Navigation -->
+    <header class="admin-header">
+      <div class="header-brand">
+        <h2>Admin Portal</h2>
+        <span class="badge-admin">System Admin</span>
+      </div>
+      <button id="logoutBtn" class="btn btn-outline">Logout</button>
+    </header>
+
+    <main class="admin-content">
+      
+      <!-- Top Grid: Bank Details Settings & Quick Stats -->
+      <section class="dashboard-grid">
+        
+        <!-- Bank Account Config Card -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Update Receiving Bank Account</h3>
+            <p>Set active account details displayed to users during token top-up.</p>
+          </div>
+          <form id="bankConfigForm" class="card-body form-stack">
+            <div class="form-group">
+              <label for="bankNameInput">Bank Name</label>
+              <input type="text" id="bankNameInput" placeholder="e.g. GTBank" required />
+            </div>
+
+            <div class="form-group">
+              <label for="accountNumberInput">Account Number</label>
+              <input type="text" id="accountNumberInput" placeholder="e.g. 0123456789" required />
+            </div>
+
+            <div class="form-group">
+              <label for="accountNameInput">Account Name</label>
+              <input type="text" id="accountNameInput" placeholder="e.g. Company Ltd" required />
+            </div>
+
+            <button type="submit" id="saveBankBtn" class="btn btn-primary">
+              Save Account Details
+            </button>
+          </form>
+        </div>
+
+        <!-- Quick Analytics Summary Card -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Top-Up Activity Overview</h3>
+            <p>Summary of payment verifications across the platform.</p>
+          </div>
+          <div class="card-body metrics-stack">
+            <div class="metric-box">
+              <span class="metric-label">Pending Verifications</span>
+              <span id="statPendingCount" class="metric-value pending-color">0</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">Total Value Pending</span>
+              <span id="statPendingAmount" class="metric-value">₦0</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Table Section: Pending Token Purchases -->
+      <section class="card table-card">
+        <div class="card-header flex-between">
+          <div>
+            <h3>Pending Token Purchases</h3>
+            <p>Review bank transfer receipts and credit user accounts.</p>
+          </div>
+          <button id="refreshTableBtn" class="btn btn-secondary btn-sm">Refresh List</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date / Time</th>
+                <th>User Email</th>
+                <th>Tokens Requested</th>
+                <th>Amount (NGN)</th>
+                <th>Receipt</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pendingTableBody">
+              <tr>
+                <td colspan="6" class="text-center">Loading pending requests...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="script/token-manager.js"></script>
+</body>
+</html>

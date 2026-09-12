@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>create skin</title>
+  <script src="script/createSkin.js" defer></script>
+  <style>
+
+:root {
+  --bg-primary: #0f172a;
+  --bg-surface: #1e293b;
+  --border-color: #334155;
+  --accent-color: #3b82f6;
+  --accent-hover: #2563eb;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --error-color: #ef4444;
+  --success-color: #10b981;
+  --radius: 12px;
+}
+
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-surface: #ffffff;
+  --border-color: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+}
+
+/* Form Container */
+#uploadSkinForm {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  max-width: 440px;
+  margin: 2rem auto;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text-main);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Form Groups & Labels */
+#uploadSkinForm > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+#uploadSkinForm label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.025em;
+}
+
+/* Inputs (Text, Number, File) */
+#uploadSkinForm input[type="text"],
+#uploadSkinForm input[type="number"],
+#uploadSkinForm input[type="file"] {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-size: 0.95rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#uploadSkinForm input[type="text"]:focus,
+#uploadSkinForm input[type="number"]:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Custom Styled File Input */
+#uploadSkinForm input[type="file"] {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+#uploadSkinForm input[type="file"]::file-selector-button {
+  background: var(--border-color);
+  border: none;
+  color: var(--text-main);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-right: 0.75rem;
+  transition: background-color 0.2s ease;
+}
+
+#uploadSkinForm input[type="file"]::file-selector-button:hover {
+  background-color: var(--accent-color);
+}
+
+/* Submit Button */
+#submitSkinBtn {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--accent-color);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+#submitSkinBtn:hover {
+  background-color: var(--accent-hover);
+}
+
+#submitSkinBtn:active {
+  transform: scale(0.98);
+}
+
+#submitSkinBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Status Message Box */
+#uploadStatus {
+  max-width: 440px;
+  margin: 1rem auto;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  min-height: 1.5rem;
+}
+  </style>
+</head>
+<body>
+  <form id="uploadSkinForm" enctype="multipart/form-data">
+  <div>
+    <label for="skinName">Skin Name</label>
+    <input type="text" id="skinName" placeholder="e.g. Cyberpunk Neon" required>
+  </div>
+
+  <div>
+    <label for="tokenCost">Token Cost</label>
+    <input type="number" id="tokenCost" min="0" placeholder="0" value="0">
+  </div>
+
+  <div>
+    <label for="skinGraphic">Skin Image File</label>
+    <input type="file" id="skinGraphic" accept="image/*" required>
+  </div>
+
+  <button type="submit" id="submitSkinBtn">Upload Skin</button>
+</form>
+
+<div id="uploadStatus"></div>
+</body>
+</html>

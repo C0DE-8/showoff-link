@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Flow Studio</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --border-color: #334155;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #10b981;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      padding: 2rem;
+      min-height: 100vh;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .btn-logout {
+      background-color: transparent;
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover {
+      background-color: var(--danger);
+      color: #fff;
+    }
+
+    /* Tab Navigation */
+    .tab-container {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tab-btn {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background-color: var(--primary);
+      color: var(--text-main);
+      border-color: var(--primary);
+    }
+
+    /* Form Container */
+    .form-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    h2 {
+      margin-bottom: 1.5rem;
+      color: var(--text-main);
+      font-size: 1.25rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus {
+      border-color: var(--primary);
+    }
+
+    /* Dynamic Item List */
+    .dynamic-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .dynamic-item {
+      background-color: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .select-role {
+      width: 120px;
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.75rem;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .btn-remove {
+      background: transparent;
+      border: none;
+      color: var(--danger);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0 0.5rem;
+    }
+
+.btn-secondary {
+      background-color: transparent;
+      border: 1px dotted var(--primary);
+      color: var(--primary);
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      width: 100%;
+      margin-bottom: 1.5rem;
+      transition: background 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(99, 102, 241, 0.1);
+    }
+
+    .btn-submit {
+      background-color: var(--accent);
+      color: var(--bg-dark);
+      border: none;
+      padding: 0.85rem;
+      width: 100%;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-submit:hover {
+      opacity: 0.9;
+    }
+
+    /* Toast Notification */
+    #toastContainer {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 1000;
+    }
+
+    .toast {
+      padding: 0.85rem 1.25rem;
+      border-radius: 6px;
+      color: #fff;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      animation: slideIn 0.3s ease-out forwards;
+    }
+
+    .toast.error { background-color: var(--danger); }
+    .toast.success { background-color: var(--accent); color: var(--bg-dark); }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-bar">
+    <h1>Admin Studio</h1>
+    <button id="logoutBtn" class="btn-logout">Logout</button>
+  </div>
+
+  <div class="tab-container">
+    <button class="tab-btn active" onclick="switchTab('pairedTab')">1. Paired Session Template</button>
+    <button class="tab-btn" onclick="switchTab('communityTab')">2. Community Canvas Story</button>
+  </div>
+
+  <div class="form-card">
+    
+    <!-- FLOW 1: PAIRED SESSION TEMPLATE FORM -->
+    <div id="pairedTab" class="tab-content active">
+      <h2>Create Paired Session Script</h2>
+      <form id="pairedForm">
+        <div class="form-group">
+          <label for="pairedTitle">Template Title</label>
+          <input type="text" id="pairedTitle" placeholder="e.g., The Interrogation" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="roleAName">Role A Display Name</label>
+            <input type="text" id="roleAName" placeholder="e.g., Detective" required>
+          </div>
+          <div class="form-group">
+            <label for="roleBName">Role B Display Name</label>
+            <input type="text" id="roleBName" placeholder="e.g., Suspect" required>
+          </div>
+        </div>
+
+        <label>Script Turns Sequence</label>
+        <div id="turnsContainer" class="dynamic-list"></div>
+        <button type="button" class="btn-secondary" id="addTurnBtn">+ Add Script Turn</button>
+
+        <button type="submit" class="btn-submit">Publish Paired Template</button>
+      </form>
+    </div>
+
+    <!-- FLOW 2: COMMUNITY VOICE CANVAS FORM -->
+    <div id="communityTab" class="tab-content">
+      <h2>Create Community Canvas Story</h2>
+      <form id="communityForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="storyTitle">Story Title</label>
+            <input type="text" id="storyTitle" placeholder="e.g., Echoes of Mars" required>
+          </div>
+          <div class="form-group">
+            <label for="storySlug">Story Slug</label>
+            <input type="text" id="storySlug" placeholder="e.g., echoes-of-mars" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="promptText">Master Context / Prompt</label>
+          <textarea id="promptText" rows="3" placeholder="Set the scene or mood for contributors..." required></textarea>
+        </div>
+
+        <label>Story Line Prompts (In Sequential Order)</label>
+        <div id="piecesContainer" class="dynamic-list"></div>
+        <button type="button" class="btn-secondary" id="addPieceBtn">+ Add Story Line Prompt</button>
+
+<button type="submit" class="btn-submit">Publish Community Story</button>
+      </form>
+    </div>
+
+  </div>
+
+  <div id="toastContainer"></div>
+
+  <script src="script/adminFlow.js"></script>
+</body>
+</html>

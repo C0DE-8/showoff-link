@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recover Password</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .card { background: #1e293b; padding: 30px; border-radius: 12px; width: 100%; max-width: 380px; box-sizing: border-box; border: 1px solid #334155; }
+    .input-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-size: 14px; color: #94a3b8; }
+    input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; outline: none; }
+    button.submit-btn { width: 100%; padding: 12px; background: #c084fc; color: #0f172a; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .alert { padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; display: none; }
+    .alert-error { background: #7f1d1d; color: #fca5a5; }
+    .alert-success { background: #064e3b; color: #6ee7b7; }
+    .back-btn { background: none; border: none; color: #c084fc; cursor: pointer; margin-top: 15px; width:100%; text-align:center; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h3>Forgot Password</h3>
+    <div id="alert" class="alert"></div>
+    <form onsubmit="handleForgot(event)">
+      <div class="input-group">
+        <label>Account Email</label>
+        <input type="email" id="email" required>
+      </div>
+      <button type="submit" class="submit-btn">Send Reset Link</button>
+    </form>
+    <button class="back-btn" onclick="window.location.href='/authHub'">Back to Login</button>
+  </div>
+
+  <script>
+    async function handleForgot(e) {
+      e.preventDefault();
+      const alertBox = document.getElementById('alert');
+      try {
+        const res = await fetch('/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.value })
+        });
+        const data = await res.json();
+        if(res.ok) {
+          alertBox.className = "alert alert-success";
+          alertBox.innerHTML = `Link generated! Check <a href="${data.preview}" target="_blank" style="color:white;text-decoration:underline">Ethereal Inbox</a> to update your password.`;
+          alertBox.style.display = "block";
+        } else {
+          alertBox.className = "alert alert-error";
+          alertBox.innerText = data.error;
+          alertBox.style.display = "block";
+        }
+      } catch { alertBox.innerText = "Connection error."; alertBox.style.display = "block"; }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #141417;
+      --card-border: #232329;
+      --text: #ffffff;
+      --text-muted: #8e8e93;
+      --accent: #a855f7;
+      
+      /* Light Mode Logout Styling */
+      --btn-white-bg: #ffffff;
+      --btn-white-text: #09090b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .app-viewport {
+      width: 100%;
+      max-width: 440px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* Top User Bar */
+    .user-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.25rem 0;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+
+    .user-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* Light Mode Logout Button */
+    .btn-logout-pill {
+      background: var(--btn-white-bg);
+      color: var(--btn-white-text);
+      border: none;
+      padding: 0.45rem 0.95rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .btn-logout-pill:hover {
+      opacity: 0.9;
+    }
+
+    /* Hero Balance Card */
+    .balance-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .balance-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .balance-amount {
+      font-size: 2.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .balance-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .pill-btn {
+      flex: 1;
+      padding: 0.6rem 0.5rem;
+      border-radius: 9999px;
+      background: #1c1c21;
+      border: 1px solid #2a2a32;
+      color: var(--text);
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: background 0.2s ease;
+    }
+
+    .pill-btn:hover {
+      background: #272730;
+    }
+
+    .pill-btn.primary {
+      background: #272038;
+      border-color: #3b2d54;
+      color: #c084fc;
+    }
+
+    /* Bento Grid */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .bento-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 1.25rem;
+      text-decoration: none;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 140px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .bento-card:hover {
+      transform: translateY(-2px);
+      border-color: #383842;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .card-main-stat {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-top: 0.5rem;
+    }
+
+    .card-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+/* Feature Cards Accents */
+    .bento-card.gradient-card {
+      background: linear-gradient(135deg, #431407 0%, #141417 100%);
+    }
+
+    .bento-card.purple-card {
+      background: linear-gradient(135deg, #3b0764 0%, #141417 100%);
+    }
+
+    .bento-card.blue-card {
+      background: linear-gradient(135deg, #0c4a6e 0%, #141417 100%);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-viewport">
+    
+    <!-- Top Bar -->
+    <header class="user-header">
+      <div class="user-profile">
+        <div class="user-avatar">JD</div>
+        <span class="user-name">Account</span>
+      </div>
+      <button class="btn-logout-pill" onclick="handleLogout()">Log out</button>
+    </header>
+
+    <!-- Main Balance Card -->
+    <section class="balance-card">
+      <div>
+        <div class="balance-label">Available balance</div>
+        <div class="balance-amount" id="balanceText">... Tokens</div>
+      </div>
+      
+      <div class="balance-actions">
+      
+        <button class="pill-btn primary" id="purchaseBtn">+ Top up</button>
+        <a href="/portal.html" class="pill-btn">Portal</a>
+        <a href="/shop.html" class="pill-btn">Store</a>
+      </div>
+    </section>
+
+    <!-- Bento Grid -->
+    <main class="bento-grid">
+      
+      <!-- Text Capsule -->
+      <a href="/text-handler.html" class="bento-card">
+        <div>
+          <div class="card-title">Text Capsule</div>
+          <div class="card-main-stat">Decrypt</div>
+        </div>
+        <div class="card-desc">text payloads</div>
+      </a>
+
+      <!-- Image Canvas -->
+      <a href="/image-handler.html" class="bento-card gradient-card">
+        <div>
+          <div class="card-title">Image Canvas</div>
+          <div class="card-main-stat">Wrappers</div>
+        </div>
+        <div class="card-desc">Node visual layouts</div>
+      </a>
+
+      <!-- Voice Note -->
+      <a href="/recorder.html" class="bento-card purple-card">
+        <div>
+          <div class="card-title">Voice Note</div>
+          <div class="card-main-stat">Audio Clips</div>
+        </div>
+        <div class="card-desc">Encrypted audio recording</div>
+      </a>
+
+      <!-- Profile & Settings -->
+      <a href="/settings.html" class="bento-card blue-card">
+        <div>
+          <div class="card-title">Profile</div>
+          <div class="card-main-stat">Settings</div>
+        </div>
+        <div class="card-desc">Account & security controls</div>
+      </a>
+
+    </main>
+
+  </div>
+
+  <script src="script/dashboard.js"></script>
+</body>
+</html>

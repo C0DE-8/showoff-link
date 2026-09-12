@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile</title>
+  <script defer src="/script/profile-handler.js"></script>
+  <style>
+    /* Premium Glassmorphic Palette Core */
+    :root {
+      --bg-gradient: linear-gradient(135deg, #090d16 0%, #111424 100%);
+      --glass-panel: rgba(15, 23, 42, 0.55);
+      --glass-panel-heavy: rgba(15, 23, 42, 0.85);
+      --border-line: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-color: #c084fc;
+      --accent-glow: rgba(251, 146, 60, 0.25);
+      --icon-bg: rgba(255, 255, 255, 0.04);
+      --shadow: rgba(0, 0, 0, 0.4);
+      --toast-error: #ef4444;
+      --toast-success: #10b981;
+    }
+
+    [data-theme="light"] {
+      --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      --glass-panel: rgba(255, 255, 255, 0.65);
+      --glass-panel-heavy: rgba(255, 255, 255, 0.9);
+      --border-line: rgba(15, 23, 42, 0.08);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --accent-color: #c084fc;
+      --accent-glow: rgba(249, 115, 22, 0.15);
+      --icon-bg: rgba(15, 23, 42, 0.04);
+      --shadow: rgba(15, 23, 42, 0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background 0.3s, color 0.3s;
+      padding: 24px;
+    }
+
+    /* Top Utility Navigation Header */
+    .top-nav {
+      width: 100%;
+      max-width: 1080px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: var(--glass-panel);
+      border: 1px solid var(--border-line);
+      border-radius: 12px;
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+      background: var(--icon-bg);
+      transform: translateX(-3px);
+      border-color: var(--accent-color);
+    }
+
+    .exit-btn {
+      padding: 10px 18px;
+      background: transparent;
+      border: 1px solid var(--border-line);
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .exit-btn:hover {
+      color: var(--toast-error);
+      border-color: var(--toast-error);
+    }
+
+    /* Page Layout Container */
+    .main-container {
+      width: 100%;
+      max-width: 1080px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* Hero Identity Header Banner */
+    .identity-hero {
+      background: var(--glass-panel);
+      border: 1px solid var(--border-line);
+      border-radius: 24px;
+      padding: 32px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 12px 32px var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .identity-hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 300px;
+      height: 300px;
+      background: var(--accent-glow);
+      filter: blur(90px);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .user-profile-summary {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+.avatar-badge {
+      width: 68px;
+      height: 68px;
+      border-radius: 20px;
+      background: var(--icon-bg);
+      border: 1px solid var(--border-line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: inset 0 0 12px rgba(255,255,255,0.05);
+    }
+
+    .user-details h1 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .user-details p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .tag-pill {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 4px 10px;
+      background: var(--icon-bg);
+      border: 1px solid var(--border-line);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-color);
+    }
+
+    /* Metric Vault Banner Block */
+    .token-vault-badge {
+      background: var(--glass-panel-heavy);
+      border: 1px solid var(--border-line);
+      padding: 16px 28px;
+      border-radius: 18px;
+      text-align: right;
+    }
+
+    .token-vault-badge label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      font-weight: 700;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .token-vault-badge span {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    /* Workspace Content Split Grid */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 28px;
+    }
+
+    @media (max-width: 860px) {
+      .workspace-grid { grid-template-columns: 1fr; }
+      .identity-hero { flex-direction: column; align-items: flex-start; }
+      .token-vault-badge { width: 100%; text-align: left; }
+    }
+
+    /* Interactive Panel Base */
+    .panel-block {
+      background: var(--glass-panel);
+      border: 1px solid var(--border-line);
+      border-radius: 24px;
+      padding: 28px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 10px 30px var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .panel-header {
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-line);
+    }
+
+    .panel-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Form Fields & Controls */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-prefix {
+      position: absolute;
+      left: 14px;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border-line);
+      background: rgba(0, 0, 0, 0.18);
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .input-wrapper input {
+      padding-left: 32px;
+    }
+
+    input:focus {
+      border-color: var(--accent-color);
+      background: rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .btn-accent {
+      background: var(--accent-color);
+      color: #000;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+.btn-accent:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-accent:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Toast styling */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 350px;
+    }
+
+    .toast {
+      padding: 14px 18px;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+    }
+
+    .toast-success { background: var(--toast-success); }
+    .toast-error { background: var(--toast-error); }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Top Utility Header with Back Arrow Navigation -->
+  <nav class="top-nav">
+    <a href="/dashboard.html" class="back-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      Dashboard
+    </a>
+    <button class="exit-btn" onclick="logout()">Exit Workspace</button>
+  </nav>
+
+  <main class="main-container">
+    
+    <!-- Hero Identity Banner (Replaces standard boring text details) -->
+    <section class="identity-hero">
+      <div class="user-profile-summary">
+        <div class="avatar-badge">👤</div>
+        <div class="user-details">
+          <h1 id="txtFullName">Loading Profile...</h1>
+          <p id="txtEmail">...`</p>
+          <span class="tag-pill" id="txtTagname">@handle</span>
+        </div>
+      </div>
+      <div class="token-vault-badge">
+        <label>Available Token Volume</label>
+        <span id="txtTokens">0</span>
+      </div>
+    </section>
+
+    <!-- Interactive Workspace Grid -->
+    <div class="workspace-grid">
+      
+      <!-- Panel 1: Modify Tag Handle -->
+      <section class="panel-block">
+        <div>
+          <div class="panel-header">
+            <h2> Modify Handle</h2>
+            <p>Update your custom tagname.</p>
+          </div>
+          <form id="tagnameForm">
+            <div class="form-group">
+              <label for="inpNewTagname">New Handle Alias</label>
+              <div class="input-wrapper">
+                <span class="input-prefix">@</span>
+                <input type="text" id="inpNewTagname" placeholder="alphanumeric_only" required>
+              </div>
+            </div>
+            <button type="submit" id="btnTagname" class="btn btn-accent">Update Handle</button>
+          </form>
+        </div>
+      </section>
+
+   
+
+    </div>
+  </main>
+
+</body>
+</html>

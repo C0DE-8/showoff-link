@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Note Core — Terminal</title>
+  <script defer src="/script/recorder.js"></script>
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at center, #111827 0%, #030712 100%);
+      --glass-panel-heavy: rgba(15, 23, 42, 0.9);
+      --border-line: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-color: #c084fc;
+      --accent-glow: rgba(251, 146, 60, 0.3);
+      --record-red: #ef4444;
+      --record-glow: rgba(239, 68, 68, 0.35);
+      --toast-success: #10b981;
+      --shadow: rgba(0, 0, 0, 0.6);
+    }
+
+    [data-theme="light"] {
+      --bg-gradient: radial-gradient(circle at center, #ffffff 0%, #f1f5f9 100%);
+      --glass-panel-heavy: rgba(255, 255, 255, 0.95);
+      --border-line: rgba(15, 23, 42, 0.1);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --accent-color: #c084fc;
+      --accent-glow: rgba(234, 88, 12, 0.2);
+      --shadow: rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      transition: background 0.3s, color 0.3s;
+      overflow-x: hidden;
+    }
+
+    /* Top Navigation Header */
+    .top-nav {
+      position: absolute;
+      top: 32px;
+      left: 32px;
+      right: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .back-arrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .back-arrow:hover {
+      color: var(--accent-color);
+    }
+
+    .theme-toggle-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+    .theme-toggle-btn:hover { color: var(--text-main); }
+
+    /* Minimal Floating Workspace */
+    .workspace-wrapper {
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .workspace-title h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    .workspace-title p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+    }
+
+    /* Monospace Counter Display */
+    .time-counter {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 40px;
+      color: var(--text-main);
+    }
+
+    /* Controls Alignment */
+    .controls-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 32px;
+      width: 100%;
+      margin-bottom: 24px;
+    }
+
+    .action-btn {
+      border: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Main Record Button */
+    .btn-record {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: var(--record-red);
+      color: #ffffff;
+      box-shadow: 0 0 30px var(--record-glow);
+    }
+
+    .btn-record:hover {
+      transform: scale(1.05);
+    }
+
+    .btn-record.recording {
+      animation: pulseRecord 1.5s infinite;
+      border-radius: 24px;
+    }
+
+    /* Side Control Buttons */
+    .btn-control {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-line);
+      color: var(--text-main);
+    }
+
+    .btn-control:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+      transform: scale(1.08);
+    }
+
+    .btn-control:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+    }
+
+    .icon-svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .btn-record .icon-svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    /* Action Trigger Button */
+    .upload-container {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .upload-trigger-btn {
+      background: none;
+      border: none;
+      color: var(--accent-color);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .upload-trigger-btn.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .upload-trigger-btn:hover {
+      text-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    /* Modal Overlay Component */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(2, 6, 23, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-box {
+      background: var(--glass-panel-heavy);
+      border: 1px solid var(--border-line);
+      width: 100%;
+      max-width: 440px;
+      border-radius: 28px;
+      padding: 32px;
+      box-shadow: 0 30px 60px var(--shadow);
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal-box {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .modal-header h3 {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .close-modal-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper .input-icon {
+      position: absolute;
+      left: 14px;
+      color: var(--text-muted);
+      width: 18px;
+      height: 18px;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 14px 14px 14px 42px;
+      border-radius: 12px;
+      border: 1px solid var(--border-line);
+      background: rgba(0, 0, 0, 0.25);
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    input:focus {
+      border-color: var(--accent-color);
+    }
+
+    .btn {
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-accent {
+      background: var(--accent-color);
+      color: #000;
+      box-shadow: 0 4px 16px var(--accent-glow);
+      width: 100%;
+    }
+
+    /* Result Box Integration */
+    .result-container {
+      margin-top: 20px;
+      background: rgba(251, 146, 60, 0.05);
+      border: 1px dashed var(--accent-color);
+      border-radius: 12px;
+      padding: 16px;
+      display: none;
+      text-align: left;
+    }
+
+    .url-box {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .url-input {
+      flex-grow: 1;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-line);
+      color: var(--text-main);
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    /* Toast System Setup */
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 340px;
+    }
+
+    .toast {
+      padding: 14px 18px;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 14px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .toast-error { background: var(--record-red); }
+    .toast-success { background: var(--toast-success); }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @keyframes pulseRecord {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+      70% { box-shadow: 0 0 0 18px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Top Navigation Header -->
+  <nav class="top-nav">
+    <a href="/dashboard.html" class="back-arrow">
+      <svg class="icon-svg" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+      Back to Dashboard
+    </a>
+    <button class="theme-toggle-btn" id="themeBtn">
+      <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      Light Mode
+    </button>
+  </nav>
+
+  <!-- Workspace Block -->
+  <div class="workspace-wrapper">
+    <div class="workspace-title">
+      <h1>Voice Note Core</h1>
+      <p>Secure micro-audio compression envelopes</p>
+    </div>
+
+    <div class="time-counter" id="timer">00:00</div>
+
+    <div class="controls-row">
+      <!-- Discard Button -->
+      <button class="action-btn btn-control" id="clearBtn" disabled title="Discard Recording">
+        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+      </button>
+
+      <!-- Record Toggle Button -->
+      <button class="action-btn btn-record" id="recordBtn" title="Toggle Recording">
+        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+      </button>
+
+      <!-- Preview Playback Button -->
+      <button class="action-btn btn-control" id="playBtn" disabled title="Preview Playback">
+        <svg class="icon-svg" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </button>
+    </div>
+
+    <!-- Upload Action Link -->
+    <div class="upload-container">
+      <button class="upload-trigger-btn" id="uploadTriggerBtn">
+        Upload
+        <svg class="icon-svg" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Parameter Modal -->
+  <div class="modal-overlay" id="configModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Payload Parameters</h3>
+        <button class="close-modal-btn" id="closeModalBtn">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      
+      <form id="uploadForm">
+        <div class="form-group">
+          <label for="allowedPlays"> max view (20)</label>
+          <div class="input-wrapper">
+            <svg class="icon-svg input-icon" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            <input type="number" id="allowedPlays" name="allowed_plays" min="1" max="20" value="5">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="recipientTag">Recipient Handle</label>
+          <div class="input-wrapper">
+            <svg class="icon-svg input-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>
+            <input type="text" id="recipientTag" name="recipient_tagname" placeholder="Leave blank for public link">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-accent" id="submitPayloadBtn">
+          upload • 2 Tokens
+        </button>
+      </form>
+
+      <!-- Return Data URL Container -->
+      <div class="result-container" id="resultContainer">
+        <label>Secure link Generated</label>
+        <div class="url-box">
+          <input type="text" class="url-input" id="shareableUrl" readonly>
+          <button class="btn btn-control" id="copyBtn" style="width: auto; height: auto; padding: 0 14px; font-size: 13px; border-radius: 8px;">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

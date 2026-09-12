@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Operations Center — Showoff Links</title>
+  <style>
+    /* CSS Theme Variables (Kali Purple Dark Aesthetic) */
+    :root {
+      --bg: #0d0b18;
+      --card-bg: rgba(22, 17, 38, 0.85);
+      --text: #f3e8ff;
+      --text-muted: #a78bfa;
+      --border: #3b2d54;
+      --accent: #a855f7;
+      --accent-hover: #c084fc;
+      --accent-glow: rgba(168, 85, 247, 0.35);
+      --toast-error: #ef4444;
+      --toast-success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.15) 0%, transparent 60%),
+        radial-gradient(circle at 100% 100%, rgba(192, 132, 252, 0.08) 0%, transparent 50%);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Layout Wrapper */
+    .admin-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 30px 20px 60px;
+    }
+
+    /* Top Navigation Bar */
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      background: var(--accent);
+      color: #0d0b18;
+      font-weight: 900;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Welcome / Headline Banner */
+    .welcome-section {
+      margin-bottom: 36px;
+    }
+
+    .welcome-section h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin-bottom: 6px;
+    }
+
+    .welcome-section p {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    /* Primary Portal Navigation Grid */
+    .portal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .portal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .portal-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(168, 85, 247, 0.1);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    .card-content h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .card-content p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .btn-action {
+      background: var(--accent);
+      color: #0d0b18;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 0 15px var(--accent-glow);
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-action:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 0 25px rgba(168, 85, 247, 0.5);
+    }
+
+    /* Real-Time Live Quick Analytics Snapshot */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .stat-box {
+      background: rgba(19, 14, 38, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    /* Toast System */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 350px;
+      width: 100%;
+    }
+
+    .toast {
+      padding: 14px 18px;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .toast-error { background: var(--toast-error); }
+    .toast-success { background: var(--toast-success); }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 640px) {
+      .admin-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .header-actions { width: 100%; justify-content: space-between; }
+    }
+  </style>
+
+  <!-- Separate JavaScript Logic using defer -->
+<script defer src="script/admin.js" defer></script>
+</head>
+<body>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <div class="admin-container">
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="brand">
+        <span class="brand-badge">Root</span>
+        <span class="brand-title">Operations Hub</span>
+      </div>
+      <div class="header-actions">
+        <a href="/admin-dashboard.html" class="btn">Admin Workspace</a>
+        <button class="btn btn-danger" id="logoutBtn">Sign Out</button>
+      </div>
+    </header>
+
+    <!-- Welcome Section -->
+    <section class="welcome-section">
+      <h1>System Overview</h1>
+      <p>Manage platform skins, monitor burn statistics, and inspect system telemetry.</p>
+    </section>
+
+    <!-- Quick Live Metrics Snapshot -->
+    <div class="metrics-row">
+      <div class="stat-box">
+        <div class="stat-label">Registered Users</div>
+        <div class="stat-value" id="statUsers">--</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Active Notes</div>
+        <div class="stat-value" id="statNotes">--</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Image Storage</div>
+        <div class="stat-value" id="statStorage">-- MB</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Circulating Tokens</div>
+        <div class="stat-value" id="statTokens">--</div>
+      </div>
+    </div>
+
+    <!-- Navigation Hub Cards -->
+    <div class="portal-grid">
+      
+      <!-- Card 1: Platform Analytics -->
+      <div class="portal-card">
+        <div>
+          <div class="card-icon">📊</div>
+          <div class="card-content">
+            <h2>admin skin upload</h2>
+            <p>upload cool skins</p>
+          </div>
+        </div>
+        <a href="/adminSkin.html" class="btn-action">
+          <span>View</span>
+          <span>→</span>
+        </a>
+      </div>
+
+      <!-- Card 2: Skin Engine Management -->
+      <div class="portal-card">
+        <div>
+          <div class="card-icon">🎨</div>
+          <div class="card-content">
+            <h2>token Manager</h2>
+            <p>verify tokens flow.</p>
+          </div>
+        </div>
+        <a href="/token-manger.html" class="btn-action">
+          <span>Manage tokens</span>
+          <span>→</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

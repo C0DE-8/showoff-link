@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Cipher Note View</title>
+   <script defer src="/script/noteView.js"></script>
+  <style>
+    /* Reset & Full Bleed Mobile Display */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh; /* Adapts to full height including mobile browser bars */
+      overflow: hidden;
+      background-color: #000000;
+      color: #ffffff;
+    }
+
+    /* Full-Screen Instagram Status Viewport */
+    .story-viewport {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-image: url('/skins/Out.jpg'); /* Fallback image */
+    }
+
+    /* Dark Vignette for Text Contrast */
+    .story-vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.65) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Top Bar - Minimal Progress Loader Only */
+    .story-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      padding: 12px 16px;
+      /* Safety area padding for notched mobile phones */
+      padding-top: max(12px, env(safe-area-inset-top));
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 2.5px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: #ffffff;
+      border-radius: 2px;
+      box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+    }
+
+    .progress-fill.active {
+      animation: storyProgress 15s linear forwards;
+    }
+
+    @keyframes storyProgress {
+      from { width: 0%; }
+      to { width: 100%; }
+    }
+
+    /* Center Quote Stage */
+    .quote-stage {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 600px;
+      padding: 0 32px;
+      text-align: center;
+    }
+
+    .quote-text {
+      font-size: 1.85rem;
+      font-weight: 600;
+      line-height: 1.45;
+      color: #ffffff;
+      text-shadow: 0 2px 16px rgba(0, 0, 0, 0.85);
+      word-break: break-word;
+    }
+
+    @media (max-width: 480px) {
+      .quote-text {
+        font-size: 1.5rem;
+      }
+    }
+
+    /* Error Overlay Screen */
+    .error-stage {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      background: #05070c;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 32px;
+      text-align: center;
+    }
+
+    .error-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      opacity: 0.85;
+    }
+
+    .error-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #f3f4f6;
+      margin-bottom: 8px;
+    }
+
+    .error-subtitle {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      line-height: 1.5;
+      max-width: 280px;
+    }
+
+    /* Loader Spinner */
+    .skeleton-loader {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(255, 255, 255, 0.25);
+      border-radius: 50%;
+      border-top-color: #ffffff;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="story-viewport" id="storyViewport">
+    <div class="story-vignette"></div>
+
+    <!-- Header / Loader Progress Bar -->
+    <header class="story-header">
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </header>
+
+    <!-- Center Quote Display -->
+    <main class="quote-stage">
+      <div id="loader" class="skeleton-loader"></div>
+      <blockquote id="quoteText" class="quote-text" style="display: none;"></blockquote>
+    </main>
+
+    <!-- Error Screen Overlay -->
+    <div class="error-stage" id="errorStage">
+      <div class="error-icon" id="errorIcon">🔒</div>
+      <h2 class="error-title" id="errorTitle">Payload Unavailable</h2>
+      <p class="error-subtitle" id="errorSubtitle">This message has expired or self-destructed.</p>
+    </div>
+  </div>
+
+ 
+</body>
+</html>

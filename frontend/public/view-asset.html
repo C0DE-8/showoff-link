@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Asset Viewer</title>
+  <style>
+    /* Global Instagram Story Base Structure */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background-color: #000000;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Fullscreen Story Container */
+    .status-wrapper {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100dvh;
+      background-color: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Minimalist Top Navigation Header - Loader Only */
+    .status-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      padding: 12px 16px;
+      padding-top: max(12px, env(safe-area-inset-top));
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
+    }
+
+    /* Instagram Progress Bar */
+    .timeline-container {
+      width: 100%;
+      height: 2.5px;
+      background-color: rgba(255, 255, 255, 0.3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .timeline-progress {
+      width: 0%;
+      height: 100%;
+      background-color: #ffffff;
+      border-radius: 2px;
+      box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+    }
+
+    .timeline-progress.active {
+      animation: storyProgress 15s linear forwards;
+    }
+
+    @keyframes storyProgress {
+      from { width: 0%; }
+      to { width: 100%; }
+    }
+
+    /* Responsive Display Workspace */
+    .display-workspace {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Image in Original State & Aspect Ratio */
+    .asset-frame {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain; /* Preserves original proportions without cropping or distortion */
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    .asset-frame.visible {
+      opacity: 1;
+    }
+
+    /* Centered Spinner */
+    .chill-loader {
+      position: absolute;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pulse-ring {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* Minimalist Error Screen */
+    .error-slate {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      background-color: #050505;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      text-align: center;
+    }
+
+    .error-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .error-msg {
+      font-size: 15px;
+      color: #f87171;
+      font-weight: 500;
+      line-height: 1.5;
+      margin-bottom: 24px;
+      max-width: 280px;
+    }
+
+    .return-btn {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      padding: 10px 22px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  <script defer src="/script/viewAsset.js"></script>
+</head>
+<body>
+
+  <main class="status-wrapper">
+
+    <!-- Top Navigation Loader Header -->
+    <div class="status-header">
+      <div class="timeline-container">
+        <div class="timeline-progress" id="statusTimeline"></div>
+      </div>
+    </div>
+
+    <!-- Edge-to-Edge Image Display Workspace -->
+    <div class="display-workspace" id="displayWorkspace">
+      <!-- Loading Spinner -->
+      <div class="chill-loader" id="chillLoader">
+        <div class="pulse-ring"></div>
+      </div>
+
+      <!-- Core Display Asset -->
+      <img src="" id="decryptedAsset" class="asset-frame" alt="Story Payload">
+
+      <!-- Backwards Compatibility Elements (Hidden) -->
+      <div id="statusMessage" style="display:none;"></div>
+      <div id="destructOverlay" style="display:none;"><span id="timerTick">15</span></div>
+    </div>
+
+  </main>
+
+</body>
+</html>

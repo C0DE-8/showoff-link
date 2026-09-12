@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #090d16 0%, #111424 100%);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --card-hover-bg: rgba(255, 255, 255, 0.1);
+            --text-color: #ffffff;
+            --subtext-color: #8a8f9d;
+            --accent-color: #c084fc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
+        }
+
+        .menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            text-decoration: none;
+            color: inherit;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .menu-item:hover {
+            background: var(--card-hover-bg);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .item-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .item-description {
+            font-size: 0.85rem;
+            color: var(--subtext-color);
+        }
+
+        .arrow {
+            color: var(--subtext-color);
+            font-size: 1.2rem;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .menu-item:hover .arrow {
+            color: var(--text-color);
+            transform: translateX(4px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="title">Settings</h1>
+        
+        <div class="menu-list">
+            <!-- User Profile -->
+            <a href="/profile.html" class="menu-item">
+                <div class="item-info">
+                    <span class="item-title">User Profile</span>
+                    <span class="item-description">User details</span>
+                </div>
+                <span class="arrow">&rarr;</span>
+            </a>
+
+            <!-- Your Skins -->
+            <a href="/userSkin.html" class="menu-item">
+                <div class="item-info">
+                    <span class="item-title">Your Skins</span>
+                    <span class="item-description">manage your skins</span>
+                </div>
+                <span class="arrow">&rarr;</span>
+            </a>
+
+            <!-- Send / Get Tokens -->
+            <a href="/giftToken.html" class="menu-item">
+                <div class="item-info">
+                    <span class="item-title">Send / Get Tokens</span>
+                    <span class="item-description">Real time gifting, trade, via tagname</span>
+                </div>
+                <span class="arrow">&rarr;</span>
+            </a>
+
+            <!-- Music & Sound -->
+
+<a href="#" class="menu-item">
+                <div class="item-info">
+                    <span class="item-title">Music & Sound</span>
+                    <span class="item-description">Audio preferences, background music, and sound effects</span>
+                </div>
+                <span class="arrow">&rarr;</span>
+            </a>
+
+            <!-- Credits -->
+            <a href="#" class="menu-item">
+                <div class="item-info">
+                    <span class="item-title">Credits</span>
+                    <span class="item-description">About the developer and Instagram handle</span>
+                </div>
+                <span class="arrow">&rarr;</span>
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

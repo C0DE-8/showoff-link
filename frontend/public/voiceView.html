@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Player</title>
+  
+  <style>
+    :root {
+      --bg-dim: rgba(6, 8, 20, 0.7);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-light: #e2e8f0;       /* Light grey main accent */
+      --accent-muted: #64748b;       /* Subtle slate accent */
+      --accent-glow: rgba(226, 232, 240, 0.15);
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #060814;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.8));
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Lightweight Loader Overlay */
+    .stream-loader {
+      position: fixed;
+      z-index: 20;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--accent-light);
+      text-transform: uppercase;
+      animation: pulse 1.5s infinite ease-in-out;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+      pointer-events: none;
+    }
+
+    /* Floating Frameless Layout (Card Container Removed) */
+    .player-layout {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      background: transparent;
+      border: none;
+      padding: 0;
+      box-shadow: none;
+    }
+
+    .player-layout.ready {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .status {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .status.destructing {
+      color: var(--danger);
+      animation: flash 1s infinite alternate;
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+
+    .play-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+      flex-shrink: 0;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .play-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    .play-btn:hover:not(:disabled) {
+      transform: scale(1.05);
+      background: var(--accent-light);
+      border-color: var(--accent-light);
+      color: #090d16;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .play-btn:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+    }
+
+    /* Waveform styling: blended light grey */
+    .waveform-flex {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-grow: 1;
+      height: 36px;
+    }
+
+    .bar {
+      flex-grow: 1;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
+      transform-origin: bottom;
+      transition: background 0.3s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .active .bar {
+      background: var(--accent-light);
+      box-shadow: 0 0 6px rgba(226, 232, 240, 0.3);
+      animation: bounce 0.6s ease-in-out infinite alternate;
+    }
+    .active .bar:nth-child(2n) { animation-duration: 0.4s; }
+    .active .bar:nth-child(3n) { animation-duration: 0.5s; }
+
+    .time-meta {
+      display: flex;
+      justify-content: space-between;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .error-banner {
+      position: fixed;
+      top: 20px;
+      background: var(--danger);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 30;
+      display: none;
+    }
+
+    @keyframes bounce { 
+      0% { transform: scaleY(0.2); } 
+      100% { transform: scaleY(1); } 
+    }
+    @keyframes flash { 0% { opacity: 0.4; } 100% { opacity: 1; } }
+    @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+  </style>
+</head>
+<body>
+
+  <div class="error-banner" id="err"></div>
+  
+  <div class="stream-loader" id="loader">Accessing Voice Stream...</div>
+
+  <main class="player-layout" id="panel">
+    <div class="status" id="statusLabel">🔒 SECURE STREAM</div>
+    
+    <div class="controls-row">
+      <button class="play-btn" id="play" disabled>
+        <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </button>
+      
+      <div class="waveform-flex" id="wave">
+        <div style="height:40%" class="bar"></div>
+        <div style="height:75%" class="bar"></div>
+        <div style="height:50%" class="bar"></div>
+        <div style="height:90%" class="bar"></div>
+        <div style="height:60%" class="bar"></div>
+        <div style="height:80%" class="bar"></div>
+        <div style="height:35%" class="bar"></div>
+      </div>
+    </div>
+
+    <div class="time-meta">
+      <span id="current">00:00</span>
+      <span id="duration">--:--</span>
+    </div>
+  </main>
+  
+  <script  src="/script/voice-view.js"></script>
+</body>
+</html>

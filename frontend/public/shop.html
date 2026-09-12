@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skin Shop</title>
+  <style>
+    :root {
+      --bg: #0d0b18;
+      --card-bg: rgba(22, 17, 38, 0.85);
+      --text: #ffffff;
+      --border: #3b2d54;
+      --input-bg: #130e26;
+      --tab-inactive: #a78bfa;
+      --accent: #a855f7;
+      --accent-hover: #c084fc;
+      --accent-glow: rgba(168, 85, 247, 0.35);
+      --accent-text: #0d0b18;
+      --toast-error: #ef4444;
+      --toast-success: #10b981;
+      --accent-green: #22c55e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      padding: 1.25rem 1rem;
+      overflow-x: hidden;
+    }
+
+    .shop-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+  .btn-buy{
+    margin:0 auto;
+    padding:0.4rem 0.6rem;
+    color:white;
+    background:#c084fc ;
+    cursor: pointer;
+    border:none;
+    border-radius: 0.4rem;
+    margin-top: 0.3rem;
+  }
+    /* Single-Line Inline Header Flex Alignment */
+    .shop-header {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-evnenly;
+      gap: 10rem;
+      margin-bottom: 1.5rem;
+      width: 100%;
+    }
+  .skin-info{
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+    gap:0.2rem
+  }
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      color: var(--tab-inactive);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      transition: color 0.2s ease;
+    }
+
+    .btn-back:hover {
+      color: var(--accent-hover);
+    }
+
+    .shop-title {
+      font-weight: bold;
+      text-align: center;
+      
+    }
+
+    /* Global Notification Banner */
+    .status-message {
+      padding: 0.85rem 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .status-message.hidden {
+      display: none;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--toast-error);
+      color: var(--toast-error);
+    }
+
+    .status-message.success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--toast-success);
+      color: var(--toast-success);
+    }
+
+    /* Responsive Grid */
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.25rem;
+      width: 100%;
+    }
+
+    .loading-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: var(--tab-inactive);
+      padding: 3rem 0;
+      font-size: 1rem;
+    }
+
+    /* Strict Card Sizing & Containment */
+    .shop-grid > div,
+    .skin-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+      max-width: 100%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .shop-grid > div:hover,
+    .skin-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+    }
+
+    /* Ensures skin image fits perfectly without stretching or blowing out */
+    .shop-grid img {
+      width: 100% !important;
+      height: 200px !important;
+      object-fit: contain !important;
+      border-radius: 8px;
+      background: var(--input-bg);
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .badge-equipped {
+      background: rgba(34, 197, 94, 0.2);
+      color: var(--accent-green);
+      padding: 0.35rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* Suppress SVGs, token icons, and emojis */
+    svg, .token-icon, .icon, img[src*="coin"], img[src*="token"] {
+      display: none !important;
+    }
+
+    /* Mobile Responsive View */
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem 0.75rem;
+      }
+      .shop-header {
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .shop-title {
+        font-size: 1.25rem;
+      }
+
+      .btn-back {
+        font-size: 0.85rem;
+      }
+
+      .shop-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.75rem;
+      }
+
+      .shop-grid img {
+        height: 140px !important;
+      }
+
+      .shop-grid > div,
+      .skin-card {
+        padding: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shop-container">
+    <!-- Header with Back Link and Title side-by-side -->
+    <header class="shop-header">
+      <a href="/dashboard.html" class="btn-back">&larr; Back to Dashboard</a>
+      <h2 class="shop-title">Skin Shop</h2>
+    </header>
+
+    <!-- Global Notification Banner -->
+    <div id="statusMessage" class="status-message hidden"></div>
+
+    <!-- Inventory Cards Container -->
+    <main>
+      <div id="shopGrid" class="shop-grid">
+        <div class="loading-state">Loading skin inventory...</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="script/shop.js"></script>
+</body>
+</html>

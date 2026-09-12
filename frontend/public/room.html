@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Truth or Dare - Room Hub</title>
+  <style>
+    :root {
+      --bg: #0a0a0c;
+      --card-bg: #13141c;
+      --accent: #a855f7;
+      --accent-hover: #c084fc;
+      --text: #f3f4f6;
+      --subtext: #9ca3af;
+      --border: #23263a;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    /* Top Navigation */
+    header {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      margin-bottom: 30px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .title-group h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-btn:hover {
+      border-color: var(--accent);
+      background: #1c1e2d;
+    }
+
+    /* Main Container */
+    main {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Section Views */
+    .view-section {
+      display: none;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    /* Unified Single Creation Card Layout */
+    .creation-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--subtext);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Toggle Selector */
+    .mode-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .mode-option {
+      background: #1a1c29;
+      border: 2px solid var(--border);
+      padding: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .mode-option input {
+      display: none;
+    }
+
+    .mode-option.selected {
+      border-color: var(--accent);
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    .mode-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+
+    /* Input & Select Customization */
+    select, input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      background: #1a1c29;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--accent);
+    }
+
+    /* Dynamic Fee Banner */
+    .fee-badge {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px dashed var(--accent);
+      color: #a5b4fc;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+
+    /* Action Buttons */
+    .primary-btn {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+.primary-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Invites Grid Layout */
+    .invites-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .invite-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .invite-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-accept {
+      flex: 1;
+      background: var(--success);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-decline {
+      flex: 1;
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--subtext);
+      padding: 40px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px dashed var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="title-group">
+      <h1>Truth or Dare</h1>
+    </div>
+    <button id="toggleViewBtn" class="nav-btn">
+      View Invitations
+    </button>
+  </header>
+
+  <main>
+    <!-- Room Creation Panel -->
+    <section id="createSection" class="view-section active">
+      <div class="creation-card">
+        <form id="createRoomForm">
+          
+          <div class="form-group">
+            <label>Select Game Mode</label>
+            <div class="mode-selector">
+              <label class="mode-option selected" id="modeZero">
+                <input type="radio" name="mode" value="zero_stake" checked />
+                <div class="mode-title">Zero Stake</div>
+                <small style="color: var(--subtext)">Flat Entry Fee</small>
+              </label>
+              <label class="mode-option" id="modeStake">
+                <input type="radio" name="mode" value="stake_mode" />
+                <div class="mode-title">Stake Mode</div>
+                <small style="color: var(--subtext)">Scaled by Rounds</small>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="totalRounds">Total Rounds</label>
+            <select id="totalRounds" name="totalRounds">
+              <option value="3">3 Rounds</option>
+              <option value="5">5 Rounds</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="taggedFriends">Tag Friends (Comma Separated Tagnames)</label>
+            <input type="text" id="taggedFriends" placeholder="alex, sarah, john" />
+          </div>
+
+          <div class="fee-badge" id="feeDisplay">
+            Required Charge: 2 Tokens
+          </div>
+
+          <button type="submit" class="primary-btn">Create Room</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Room Invitations Panel -->
+    <section id="invitesSection" class="view-section">
+      <div class="invites-grid" id="invitesContainer">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+  </main>
+
+  <script src="script/room.js"></script>
+</body>
+</html>

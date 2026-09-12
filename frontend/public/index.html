@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Showoff Links | Self-Destructing Data Capsules</title>
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e1b4b 100%);
+      --accent-glow: #fb923c;
+      --accent-neon: #38bdf8;
+      --panel-bg: rgba(30, 41, 59, 0.4);
+    }
+    body {
+      font-family: Comic Sans MS;
+      background: var(--bg-gradient);
+      color: #f8fafc;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Navigation / Branding Header Zone */
+    .brand-header {
+      padding: 24px 20px 0 20px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #cbd5e1;
+    }
+    .brand-header span {
+      color: var(--accent-glow);
+    }
+
+    /* Hero Layout Section */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px 40px 20px;
+      box-sizing: border-box;
+    }
+    .badge {
+      background: rgba(251, 146, 60, 0.1);
+      border: 1px solid rgba(251, 146, 60, 0.3);
+      color: var(--accent-glow);
+      padding: 6px 16px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      animation: pulse 2s infinite;
+    }
+    h1 {
+      font-size: 42px;
+      font-weight: 800;
+      margin: 0 0 15px 0;
+      letter-spacing: -1px;
+      background: linear-gradient(to right, #ffffff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    h1 span {
+      background: linear-gradient(to right, var(--accent-glow), #f97316);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .tagline {
+      font-size: 16px;
+      color: #94a3b8;
+      max-width: 400px;
+      line-height: 1.6;
+      margin: 0 0 35px 0;
+    }
+
+    /* Action Trigger Button Group */
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .cta-btn {
+      background: var(--accent-glow);
+      color: #020617;
+      border: none;
+      padding: 16px 36px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 0 25px rgba(251, 146, 60, 0.4);
+      transition: all 0.2s ease-in-out;
+      display: inline-block;
+    }
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 35px rgba(251, 146, 60, 0.6);
+    }
+    .cta-btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 16px 28px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+    .cta-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    /* Feature Grid Container Block (Pinterest-style Card Architecture) */
+    .features-container {
+      max-width: 440px;
+      margin: 0 auto;
+      padding: 0 20px 60px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .feature-card {
+      background: var(--panel-bg);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      box-sizing: border-box;
+    }
+    .icon-wrapper {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .feature-info { flex: 1; }
+    .feature-info h3 { margin: 0 0 6px 0; font-size: 16px; font-weight: 600; color: #f1f5f9; }
+    .feature-info p { margin: 0; font-size: 13px; color: #64748b; line-height: 1.5; }
+
+    /* Economy Info Strip Module Banner */
+    .economy-strip {
+      background: linear-gradient(90deg, rgba(30, 27, 75, 0.4) 0%, rgba(15, 23, 42, 0.4) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .economy-text h4 { margin: 0 0 4px 0; font-size: 14px; color: var(--accent-neon); text-transform: uppercase; letter-spacing: 0.5px; }
+    .economy-text p { margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.4; }
+
+    @keyframes pulse {
+      0% { opacity: 0.8; box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.2); }
+      70% { opacity: 1; box-shadow: 0 0 0 10px rgba(251, 146, 60, 0); }
+      100% { opacity: 0.8; box-shadow: 0 0 0 0 rgba(251, 146, 60, 0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Brand Title Header -->
+  <div class="brand-header">
+    Showoff <span>Links</span>
+  </div>
+
+  <!-- Hero Header Visual Layout Block Elements -->
+  <div class="hero">
+    <div class="badge">Stateless Security</div>
+    <h1>Self-Destructing<br><span>Data Capsules</span></h1>
+    <p class="tagline">Record voice notes, encrypt image assets, and safely ship custom text streams that vanish completely after playing once.</p>
+    
+    <div class="hero-actions">
+      <!-- Direct Get Started Button linking to authHub.html -->
+      <a href="/authHub.html" class="cta-btn">Get Started</a>
+      
+      <!-- Workspace button for returning users -->
+      <button class="cta-btn-secondary" onclick="enterApp()">Launch Workspace</button>
+    </div>
+  </div>
+
+  <!-- Showcase Architectural Layout Sections -->
+  <div class="features-container">
+    
+    <!-- Feature 1: Voice Capsule -->
+    <div class="feature-card">
+      <div class="icon-wrapper">🎙️</div>
+      <div class="feature-info">
+        <h3>WhatsApp-Style Voice Core</h3>
+        <p>Record crisp high-compression voice notes with real-time waveform updates. Automatically cues a hard server delete 5 seconds after full playback.</p>
+      </div>
+    </div>
+
+    <!-- Feature 2: Text Canvas Wrapper -->
+    <div class="feature-card">
+      <div class="icon-wrapper">✍️</div>
+      <div class="feature-info">
+        <h3>Floating Typography Canvas</h3>
+        <p>Compose temporary textual arrays inside a minimalist interface built over premium background theme canvas templates.</p>
+      </div>
+    </div>
+
+    <!-- Feature 3: Image Handling Engine -->
+    <div class="feature-card">
+      <div class="icon-wrapper">🖼️</div>
+      <div class="feature-info">
+        <h3>Encrypted Asset Drops</h3>
+        <p>Drag and drop graphic file parameters. Process buffers instantly into temporary storage lines safely locked away behind strict token controls.</p>
+      </div>
+    </div>
+
+    <!-- Token Ledger Presentation Banner -->
+    <div class="economy-strip">
+      <div style="font-size: 26px;">🪙</div>
+      <div class="economy-text">
+        <h4>Token Ledger Economy</h4>
+        <p>Manage your account wallet balance. Burn tokens to transmit highly secure storage packages or unlock permanent canvas interface skins inside the Shop.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function enterApp() {
+      // Intelligently direct user based on cached token presence context
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        window.location.href = '/dashboard.html';
+      } else {
+        window.location.href = '/authHub.html';
+      }
+    }
+  </script>
+</body>
+</html>
