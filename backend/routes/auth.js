@@ -34,15 +34,16 @@ const protect = (allowedRoles = []) => {
       const pool = req.app.get('pool');
 
       const userRes = await pool.query(
-        'SELECT id, email, role, is_verified FROM users WHERE id = $1',
+        'SELECT id, email, role, is_verified FROM users WHERE id = ?',
         [decoded.id]
       );
 
-      if (userRes.rows.length === 0) {
+      const [userRows] = userRes;
+      if (userRows.length === 0) {
         return res.status(401).json({ error: 'User no longer exists.' });
       }
 
-      const user = userRes.rows[0];
+      const user = userRows[0];
 
       if (!user.is_verified) {
         return res.status(403).json({ error: 'Please verify your email before accessing this resource.' });
@@ -81,13 +82,17 @@ router.post('/register', async (req, res) => {
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
     const query = `
-      INSERT INTO users (full_name, email, password_hash, verification_token, tagname, is_verified) 
-      VALUES ($1, $2, $3, $4, $5, FALSE) 
-      RETURNING id, full_name, email, tagname, role, is_verified
+      INSERT INTO users (id, full_name, email, password_hash, verification_token, tagname, is_verified)
+      VALUES (?, ?, ?, ?, ?, ?, FALSE)
     `;
     // Force lowercase on unique identifiers to prevent case-sensitivity collisions
-    const values = [full_name, email.toLowerCase().trim(), passwordHash, verificationToken, tagname.toLowerCase().trim()];
-    const result = await pool.query(query, values);
+    const normalizedEmail = email.toLowerCase().trim();
+    const values = [crypto.randomUUID(), full_name, normalizedEmail, passwordHash, verificationToken, tagname.toLowerCase().trim()];
+    await pool.query(query, values);
+    const [userRows] = await pool.query(
+      'SELECT id, tagname FROM users WHERE email = ?',
+      [normalizedEmail]
+    );
 
     const transporter = await getMailTransporter();
     const verificationUrl = `http://localhost:3000/auth/verify-email?token=${verificationToken}`;
@@ -102,14 +107,15 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({ 
       message: 'Registration successful! Verification email generated.', 
-      user: { id: result.rows[0].id, tagname: result.rows[0].tagname },
+      user: { id: userRows[0].id, tagname: userRows[0].tagname },
       preview: nodemailer.getTestMessageUrl(info)
     });
 
   } catch (err) {
-    if (err.code === '23505') {
-      if (err.detail.includes('email')) return res.status(400).json({ error: 'Email already registered.' });
-      if (err.detail.includes('tagname')) return res.status(400).json({ error: 'Tagname is already taken.' });
+    if (err.code === 'ER_DUP_ENTRY') {
+      const duplicateKey = err.sqlMessage || err.message || '';
+      if (duplicateKey.includes('email')) return res.status(400).json({ error: 'Email already registered.' });
+      if (duplicateKey.includes('tagname')) return res.status(400).json({ error: 'Tagname is already taken.' });
     }
     res.status(500).json({ error: 'Registration failed.', details: err.message });
   }
@@ -124,11 +130,12 @@ router.get('/verify-email', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'UPDATE users SET is_verified = TRUE, verification_token = NULL WHERE verification_token = $1 RETURNING id',
+      'UPDATE users SET is_verified = TRUE, verification_token = NULL WHERE verification_token = ?',
       [token]
     );
 
-    if (result.rows.length === 0) {
+    const [updateResult] = result;
+    if (updateResult.affectedRows === 0) {
       return res.status(400).send('<h1>Verification failed. Token invalid or already used.</h1>');
     }
 
@@ -140,14 +147,18 @@ router.get('/verify-email', async (req, res) => {
 
 // 3. LOGIN (Rejects unverified profiles)
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { identifier, email, password } = req.body;
   const pool = req.app.get('pool');
+  const loginIdentifier = String(identifier ?? email ?? '').trim();
 
   try {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase().trim()]);
-    if (result.rows.length === 0) return res.status(401).json({ error: 'Invalid credentials.' });
+    const [userRows] = await pool.query(
+      'SELECT * FROM users WHERE LOWER(email) = LOWER(?) OR LOWER(full_name) = LOWER(?)',
+      [loginIdentifier, loginIdentifier]
+    );
+    if (userRows.length === 0) return res.status(401).json({ error: 'Invalid credentials.' });
 
-    const user = result.rows[0];
+    const user = userRows[0];
 
     if (!user.is_verified) {
       return res.status(403).json({ error: 'Account email has not been verified yet.' });
@@ -170,28 +181,31 @@ router.post('/forgot-password', async (req, res) => {
   const pool = req.app.get('pool');
 
   try {
-    const userRes = await pool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase().trim()]);
-    if (userRes.rows.length === 0) {
+    const [userRows] = await pool.query('SELECT id FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+    if (userRows.length === 0) {
       return res.status(404).json({ error: 'No account associated with that email.' });
     }
 
-    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetToken = crypto.randomInt(100000, 1000000).toString();
     const expiresTime = new Date(Date.now() + 3600000); // 1 Hour lifespan window limit
 
     await pool.query(
-      'UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE email = $3',
+      'UPDATE users SET reset_password_token = ?, reset_password_expires = ? WHERE email = ?',
       [resetToken, expiresTime, email.toLowerCase().trim()]
     );
 
     const transporter = await getMailTransporter();
-    const resetUrl = `http://localhost:3000/auth/reset-password?token=${resetToken}`;
+    const resetUrl = `file:///C:/Users/hp/Documents/showoff-links%20-%20Copy/frontend/public/reset.html?code=${resetToken}`;
 
     const info = await transporter.sendMail({
       from: '"App Security" <security@example.com>',
       to: email,
       subject: "Password Reset Request",
-      html: `<p>You requested a password reset. Click the link to define a new password:</p>
-             <a href="${resetUrl}">${resetUrl}</a>`
+            html: `<p>You requested a password reset.</p>
+              <p>Your six-digit reset code is:</p>
+              <h2>${resetToken}</h2>
+              <p>Enter this code on the password reset page. It expires in one hour.</p>
+              <a href="${resetUrl}">Open password reset page</a>`
     });
 
     console.log("--------------------- PASSWORD RECOVERY SIMULATOR ---------------------");
@@ -216,11 +230,12 @@ router.post('/reset-password', async (req, res) => {
   try {
     // Locate profile matching token where expiration threshold has not passed
     const userRes = await pool.query(
-      'SELECT id FROM users WHERE reset_password_token = $1 AND reset_password_expires > NOW()',
+      'SELECT id FROM users WHERE reset_password_token = ? AND reset_password_expires > NOW()',
       [token]
     );
 
-    if (userRes.rows.length === 0) {
+    const [userRows] = userRes;
+    if (userRows.length === 0) {
       return res.status(400).json({ error: 'Reset token is invalid or has expired.' });
     }
 
@@ -228,9 +243,9 @@ router.post('/reset-password', async (req, res) => {
     const newHash = await bcrypt.hash(newPassword, salt);
 
     await pool.query(
-      `UPDATE users SET password_hash = $1, reset_password_token = NULL, reset_password_expires = NULL 
-       WHERE id = $2`,
-      [newHash, userRes.rows[0].id]
+      `UPDATE users SET password_hash = ?, reset_password_token = NULL, reset_password_expires = NULL
+       WHERE id = ?`,
+      [newHash, userRows[0].id]
     );
 
     res.json({ message: 'Password reset successfully. You can now log in.' });

@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Attach Event Triggers
   const themeBtn = document.getElementById('themeBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
+  const logoutBtn = document.querySelector('.btn-logout-pill');
   const topUpBtn = document.getElementById('purchaseBtn');
   const purchaseBtn = document.getElementById('purchaseBtn');
 
@@ -130,16 +130,16 @@ function updateThemeButtonUI(theme) {
 }
 
 function openTokenShop() {
-  window.location.href = '/buyToken.html';
+  window.location.href = './buyToken.html';
 }
 
 function handleInvalidToken() {
   localStorage.removeItem('authToken');
   localStorage.removeItem('userTagname');
-  window.location.href = '/index.html';
+  window.location.href = './index.html';
 }
 
 function logout() {
   localStorage.clear();
-  window.location.href = '/index.html';
+  window.location.href = './index.html';
 }

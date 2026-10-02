@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Music Settings</title>
+	<style>
+		:root { --accent: #a855f7; --ink: #080a14; --muted: #aeb4c8; }
+		* { box-sizing: border-box; }
+		body {
+			min-height: 100vh; margin: 0; display: grid; place-items: center; overflow: hidden;
+			color: #fff; font-family: Georgia, 'Times New Roman', serif;
+			background: radial-gradient(ellipse at 50% 0, #354263 0, #171b34 42%, var(--ink) 100%);
+		}
+		body::before { content: ''; position: fixed; inset: 0; pointer-events: none; opacity: .24;
+			background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 46px 46px; }
+		.panel { position: relative; width: min(92vw, 560px); padding: 42px; border: 1px solid #a855f755;
+			border-radius: 18px; background: #080a14cc; box-shadow: 0 22px 70px #000b, inset 0 1px #fff2;
+			backdrop-filter: blur(12px); }
+		.label { margin: 0 0 8px; color: var(--accent); font: 700 .72rem/1.2 system-ui, sans-serif;
+			letter-spacing: .24em; text-transform: uppercase; }
+		h1 { margin: 0 0 30px; font-size: clamp(2rem, 7vw, 3rem); font-weight: 400; }
+		.setting { display: flex; align-items: center; justify-content: space-between; gap: 24px;
+			padding: 22px 0; border-top: 1px solid #fff2; }
+		.setting strong { display: block; margin-bottom: 4px; font: 600 1.05rem system-ui, sans-serif; }
+		.setting small { color: var(--muted); font: .88rem system-ui, sans-serif; }
+		.switch { position: relative; flex: none; width: 58px; height: 32px; }
+		.switch input { position: absolute; opacity: 0; }
+		.slider { position: absolute; inset: 0; cursor: pointer; border-radius: 32px; background: #454b61; transition: .2s; }
+		.slider::before { content: ''; position: absolute; width: 24px; height: 24px; left: 4px; top: 4px;
+			border-radius: 50%; background: #fff; transition: .2s; }
+		input:checked + .slider { background: var(--accent); }
+		input:checked + .slider::before { transform: translateX(26px); background: #15182a; }
+		input:focus-visible + .slider { outline: 2px solid #fff; outline-offset: 3px; }
+		#state { margin: 22px 0 0; color: var(--muted); font: .8rem system-ui, sans-serif; }
+	</style>
+</head>
+<body>
+	<main class="panel" aria-labelledby="heading">
+		<p class="label">Showoff Links</p>
+		<h1 id="heading">Music settings</h1>
+		<section class="setting">
+			<div><strong>Background music/sound</strong><small>Play music modification</small></div>
+			<label class="switch" aria-label="Toggle background music">
+				<input id="music-toggle" type="checkbox" checked>
+				<span class="slider"></span>
+			</label>
+		</section>
+		<p id="state" role="status">Background music is on</p>
+	</main>
+	<script>
+		const toggle = document.getElementById('music-toggle');
+		const state = document.getElementById('state');
+		const key = 'backgroundMusicEnabled';
+		const saved = localStorage.getItem(key);
+		if (saved !== null) toggle.checked = saved === 'true';
+		function setMusicPreference() {
+			localStorage.setItem(key, String(toggle.checked));
+			state.textContent = `Background music is ${toggle.checked ? 'on' : 'off'}`;
+			// Other project pages can listen for this event and start/stop their audio.
+			window.dispatchEvent(new CustomEvent('backgroundmusicchange', { detail: { enabled: toggle.checked } }));
+		}
+		toggle.addEventListener('change', setMusicPreference);
+		setMusicPreference();
+	</script>
+</body>
+</html>

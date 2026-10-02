@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof handleInvalidToken === 'function') {
       handleInvalidToken();
     } else {
-      window.location.href = '/login.html';
+      window.location.href = './authHub.html';
     }
     return;
   }
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="success-state">
             <div class="success-icon">✓</div>
             <h4>Receipt Submitted!</h4>
-            <p>Your transfer receipt is under verification. Tokens will be credited to your balance once verified by an admin.</p>
+            <p>Your transfer receipt is under verification. Tokens will be credited to your balance once verified.</p>
             <button id="finishBtn" class="submit-btn">Back to Shop</button>
           </div>
         </div>

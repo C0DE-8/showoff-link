@@ -1,8 +1,8 @@
 // Session Token & Route Guard
 const sessionToken = localStorage.getItem('authToken');
 
-if (!sessionToken && window.location.pathname !== '/index.html') {
-  window.location.href = '/index.html';
+if (!sessionToken && window.location.pathname !== './index.html') {
+  window.location.href = './index.html';
 }
 
 // API Endpoint Setup

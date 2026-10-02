@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>image drop</title>
+  <script defer src="./script/imageRecorder.js"></script>
+  <style>
+    /* Hardcoded Dark Theme */
+    :root {
+      --bg-space: #07090e;
+      --text-primary: #f8fafc;
+      --text-secondary: #64748b;
+      --accent: #c084fc;
+      --accent-glow: rgba(192, 132, 252, 0.08);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --input-bg: rgba(255, 255, 255, 0.03);
+      --modal-overlay: rgba(3, 5, 10, 0.8);
+      --toast-err: #ef4444;
+      --toast-succ: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background: var(--bg-space);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+
+    .app-header {
+      position: absolute;
+      top: 32px;
+      left: 32px;
+      right: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-back {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .nav-back:hover {
+      color: var(--accent);
+    }
+
+    /* Open Container */
+    .vault-layout {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .vault-header {
+      margin-bottom: 32px;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .vault-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+    }
+
+    /* Minimal Inline "i" Button */
+    .info-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: var(--input-bg);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 700;
+      font-family: serif;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .info-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .upload-box {
+      border: 1px dashed var(--border-color);
+      border-radius: 12px;
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      background: var(--input-bg);
+      transition: all 0.2s ease;
+      margin-bottom: 28px;
+    }
+
+    .upload-box:hover, .upload-box.drag-active {
+      border-color: var(--accent);
+      background: var(--accent-glow);
+    }
+
+    .upload-msg {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .upload-msg span {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    #graphicAsset {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 5;
+    }
+
+    .preview-overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-space);
+      border-radius: 12px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      z-index: 4;
+    }
+
+    .preview-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .field-block {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+    }
+
+    .input-field {
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent);
+    }
+
+    .action-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .action-btn {
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      border-color: var(--text-secondary);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    .btn-cost {
+      opacity: 0.75;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+
+    .action-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .envelope-result {
+      margin-top: 28px;
+      border-top: 1px dashed var(--border-color);
+      padding-top: 20px;
+      display: none;
+    }
+
+    .result-input-wrap {
+      display: flex;
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .result-input-wrap input {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      padding: 12px;
+      font-size: 13px;
+      flex-grow: 1;
+      outline: none;
+    }
+
+    .copy-link-btn {
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      font-weight: 600;
+      padding: 0 16px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    /* Modal Overlay */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: var(--modal-overlay);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      max-width: 380px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-tag {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .modal-headline {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -0.5px;
+    }
+
+    .modal-close-btn {
+      align-self: flex-start;
+      margin-top: 4px;
+      padding: 10px 20px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+    }
+
+    /* Toast */
+    .toast-box {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast-node {
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.25s ease;
+    }
+
+    .toast-node.visible { opacity: 1; transform: translateY(0); }
+    .toast-node.err { background: var(--toast-err); }
+    .toast-node.succ { background: var(--toast-succ); color: #000; }
+  </style>
+</head>
+<body>
+
+  <div class="toast-box" id="toastBox"></div>
+
+  <header class="app-header">
+    <a href="./dashboard.html" class="nav-back">Dashboard</a>
+    <!-- Theme Toggler Removed Completely -->
+  </header>
+
+  <main class="vault-layout">
+    <div class="vault-header">
+      <div class="title-row">
+        <h1 class="vault-title">Drop Studio</h1>
+        <button type="button" class="info-btn" id="openUseCaseModal" aria-label="Use Case Information">i</button>
+      </div>
+    </div>
+
+    <!-- Replaced <form> with a standard <div> -->
+    <div id="vaultUploadContainer">
+      <div class="upload-box" id="interactionBox">
+        <p class="upload-msg">Drop asset or <span>browse</span></p>
+        
+        <input type="file" id="graphicAsset" accept="image/*">
+        
+        <div class="preview-overlay" id="previewOverlay">
+          <img src="" id="renderPreview" class="preview-img" alt="Uploaded File Asset">
+        </div>
+      </div>
+
+      <div class="control-row">
+        <div class="field-block">
+          <label class="field-label" for="allowedViews">Max Views (20)</label>
+          <input type="number" id="allowedViews" class="input-field" min="1" max="20" value="5">
+        </div>
+        <div class="field-block">
+          <label class="field-label" for="recipientTag">Recipient Handle</label>
+          <input type="text" id="recipientTag" class="input-field" placeholder="@username">
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button type="button" class="action-btn btn-secondary" id="clearAssetBtn" disabled>Reset</button>
+        <!-- Changed type="submit" to type="button" -->
+        <button type="button" class="action-btn btn-primary" id="executeUploadBtn" disabled>
+          <span>upload</span>
+          <span class="btn-cost">• 2 Tokens</span>
+        </button>
+      </div>
+    </div>
+
+    <section class="envelope-result" id="envelopeResult">
+      <label class="field-label">Generated link</label>
+      <div class="result-input-wrap">
+        <input type="text" id="envelopeUrl" readonly>
+        <button type="button" class="copy-link-btn" id="copyUrlBtn">Copy</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Clean Short Modal -->
+  <div class="modal-backdrop" id="useCaseModal">
+    <div class="modal-content">
+      <p class="modal-tag">Use Case</p>
+      <h2 class="modal-headline">Drop aesthetic shots. Unapologetically show off.</h2>
+      <button class="modal-close-btn" id="closeUseCaseModal">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // Modal Toggle Handler
+    const modal = document.getElementById('useCaseModal');
+    const openBtn = document.getElementById('openUseCaseModal');
+    const closeBtn = document.getElementById('closeUseCaseModal');
+
+    openBtn.addEventListener('click', () => modal.classList.add('active'));
+    closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('active');
+    });
+
+    // Max Views Frontend Limit Guard (20)
+    const allowedViewsInput = document.getElementById('allowedViews');
+    
+    allowedViewsInput.addEventListener('input', () => {
+      if (parseInt(allowedViewsInput.value, 10) > 20) {
+        allowedViewsInput.value = 20;
+      } else if (parseInt(allowedViewsInput.value, 10) < 1) {
+        allowedViewsInput.value = 1;
+      }
+    });
+
+
+
+// Base Configuration Constants
+const ENCRYPTION_API_TARGET = 'http://localhost:3000/api/image'; 
+const sessionToken = localStorage.getItem('authToken');
+
+// Session verification gate (Prevents infinite reload loops if already on index.html)
+if (!sessionToken && !window.location.pathname.endsWith('index.html') && window.location.pathname !== '/') {
+  window.location.href = 'index.html';
+}
+
+// Track file selection in global scope
+let targetedFile = null;
+
+// Guarantees DOM is fully parsed before event mapping runs
+document.addEventListener("DOMContentLoaded", () => {
+  initializeCardEngine();
+});
+
+/**
+ * Attaches structural DOM element handlers and event hooks
+ */
+function initializeCardEngine() {
+  const interactionBox = document.getElementById('interactionBox');
+  const fileInput = document.getElementById('graphicAsset');
+  const clearBtn = document.getElementById('clearAssetBtn');
+  const executeBtn = document.getElementById('executeUploadBtn');
+  const copyBtn = document.getElementById('copyUrlBtn');
+
+  // Allow clicking anywhere in the dropzone to trigger the file browser
+  if (interactionBox && fileInput) {
+    interactionBox.addEventListener('click', (e) => {
+      if (e.target !== fileInput && e.target !== document.getElementById('renderPreview')) {
+        fileInput.click();
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) processFileTarget(e.target.files[0]);
+    });
+
+    interactionBox.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      interactionBox.classList.add('drag-active');
+    });
+
+    ['dragleave', 'dragend'].forEach(evt => {
+      interactionBox.addEventListener(evt, () => interactionBox.classList.remove('drag-active'));
+    });
+
+    interactionBox.addEventListener('drop', (e) => {
+      e.preventDefault();
+      interactionBox.classList.remove('drag-active');
+      if (e.dataTransfer.files.length > 0) {
+        processFileTarget(e.dataTransfer.files[0]);
+        fileInput.files = e.dataTransfer.files;
+      }
+    });
+  }
+
+  // Bind direct click events
+  if (executeBtn) {
+    executeBtn.type = 'button';
+    executeBtn.addEventListener('click', (e) => dispatchAssetPayload(e));
+  }
+
+  if (clearBtn) {
+    clearBtn.type = 'button';
+    clearBtn.addEventListener('click', wipeSelectedAsset);
+  }
+
+  if (copyBtn) {
+    copyBtn.type = 'button';
+    copyBtn.addEventListener('click', handleClipboardCopy);
+  }
+}
+
+/**
+ * Validates the file target type and sets up the live preview stream
+ */
+function processFileTarget(file) {
+  if (!file || !file.type.startsWith('image/')) {
+    displayNotification("Target file must be a valid image format.", "err");
+    return;
+  }
+
+  targetedFile = file;
+
+  const parser = new FileReader();
+  parser.onload = (e) => {
+    const previewImg = document.getElementById('renderPreview');
+    const overlay = document.getElementById('previewOverlay');
+    if (previewImg && overlay) {
+      previewImg.src = e.target.result;
+      overlay.style.display = 'flex';
+      
+      const promptText = document.querySelector('.upload-msg');
+      if (promptText) promptText.style.display = 'none';
+    }
+  };
+  parser.readAsDataURL(file);
+
+  const clearAssetBtn = document.getElementById('clearAssetBtn');
+  const executeUploadBtn = document.getElementById('executeUploadBtn');
+  const envelopeResult = document.getElementById('envelopeResult');
+
+  if (clearAssetBtn) clearAssetBtn.disabled = false;
+  if (executeUploadBtn) executeUploadBtn.disabled = false;
+  if (envelopeResult) envelopeResult.style.display = 'none';
+}
+
+/**
+ * Resets the entire interactive graphic asset card state
+ */
+function wipeSelectedAsset() {
+  targetedFile = null;
+  
+  const fileInput = document.getElementById('graphicAsset');
+  const overlay = document.getElementById('previewOverlay');
+  const previewImg = document.getElementById('renderPreview');
+  const clearAssetBtn = document.getElementById('clearAssetBtn');
+  const executeUploadBtn = document.getElementById('executeUploadBtn');
+  const envelopeResult = document.getElementById('envelopeResult');
+  const promptText = document.querySelector('.upload-msg');
+
+  if (fileInput) fileInput.value = "";
+  if (overlay) overlay.style.display = 'none';
+  if (previewImg) previewImg.src = "";
+  if (promptText) promptText.style.display = 'block';
+  if (clearAssetBtn) clearAssetBtn.disabled = true;
+  if (executeUploadBtn) executeUploadBtn.disabled = true;
+  if (envelopeResult) envelopeResult.style.display = 'none';
+  
+  displayNotification("Asset workspace reset.", "succ");
+}
+
+/**
+ * Formats multi-part data structures and handles backend payload routing
+ */
+async function dispatchAssetPayload(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  if (!targetedFile) {
+    displayNotification("Please select an image file first.", "err");
+    return;
+  }
+
+  const actionBtn = document.getElementById('executeUploadBtn');
+  if (actionBtn) {
+    // Prevent double-clicking without disabling mid-click event loop
+    actionBtn.style.pointerEvents = 'none';
+    actionBtn.innerText = "Encrypting...";
+  }
+
+  const dataPayload = new FormData();
+  dataPayload.append('graphicAsset', targetedFile);
+  
+  const viewsInput = document.getElementById('allowedViews');
+  const tagInput = document.getElementById('recipientTag');
+  
+  if (viewsInput) {
+    dataPayload.append('allowed_views', viewsInput.value);
+  }
+  
+  if (tagInput && tagInput.value.trim() !== "") {
+    let runtimeTag = tagInput.value.trim();
+    if (runtimeTag.startsWith('@')) runtimeTag = runtimeTag.substring(1);
+    dataPayload.append('recipient_tagname', runtimeTag);
+  }
+
+  try {
+    const response = await fetch(`${ENCRYPTION_API_TARGET}/upload-asset`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${sessionToken}` 
+      },
+      body: dataPayload
+    });
+
+    const bodyResponse = await response.json();
+
+    if (response.ok) {
+      displayNotification("Asset successfully deployed.", "succ");
+      
+      const resContainer = document.getElementById('envelopeResult');
+      const urlField = document.getElementById('envelopeUrl');
+      
+      if (resContainer && urlField) {
+        resContainer.style.display = 'block';
+        urlField.value = bodyResponse.shareableUrl;
+      }
+    } else {
+      displayNotification(bodyResponse.error || "Failed execution criteria.", "err");
+    }
+  } catch (netErr) {
+    console.error("Network gateway error diagnostic info:", netErr);
+    displayNotification("Network gateway failure.", "err");
+  } finally {
+    if (actionBtn) {
+      actionBtn.style.pointerEvents = 'auto';
+      actionBtn.innerHTML = `<span>upload</span><span class="btn-cost">• 2 Tokens</span>`;
+    }
+  }
+}
+
+/**
+ * Handles raw visual clipboard saving functions
+ */
+function handleClipboardCopy() {
+  const urlBuffer = document.getElementById('envelopeUrl');
+  if (urlBuffer) {
+    urlBuffer.select();
+    navigator.clipboard.writeText(urlBuffer.value);
+    displayNotification("Link copied to clipboard!", "succ");
+  }
+}
+
+/**
+ * Spawns customized animated toast notifications inside the page wrapper
+ */
+function displayNotification(text, layoutType = 'err') {
+  const dock = document.getElementById('toastBox');
+  if (!dock) return;
+  
+  const notice = document.createElement('div');
+  notice.className = `toast-node ${layoutType}`;
+  notice.innerHTML = `<span>${text}</span>`;
+  dock.appendChild(notice);
+  
+  setTimeout(() => notice.classList.add('visible'), 10);
+  setTimeout(() => {
+    notice.classList.remove('visible');
+    notice.addEventListener('transitionend', () => notice.remove());
+  }, 3500);
+}
+
+  </script>
+
+</body>
+</html>

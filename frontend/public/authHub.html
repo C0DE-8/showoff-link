@@ -5,159 +5,152 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Access Hub — Showoff Links</title>
   <style>
-    /* CSS Theme Variables (Kali Purple Dark Theme Default) */
+    /* Dark professional theme */
     :root {
-      --bg: #0d0b18;
-      --card-bg: rgba(22, 17, 38, 0.85);
-      --text: #ffff;
-      --border: #3b2d54;
-      --input-bg: #130e26;
-      --tab-inactive: #a78bfa;
-      --accent: #a855f7;
-      --accent-hover: #c084fc;
-      --accent-glow: rgba(168, 85, 247, 0.35);
-      --accent-text: #0d0b18;
+      --bg: #1a1a1f;
+      --card-bg: #242429;
+      --text: #ffffff;
+      --muted: #a1a1aa;
+      --border: #3f3f46;
+      --input-bg: #1d1d22;
+      --tab-inactive: #a1a1aa;
+      --accent: #d4d4d8;
+      --accent-hover: #ffffff;
+      --accent-text: #ffffff;
       --toast-error: #ef4444;
       --toast-success: #10b981;
     }
 
-    [data-theme="light"] {
-      --bg: #f5f3ff;
-      --card-bg: #ffffff;
-      --text: #2e1065;
-      --border: #ddd6fe;
-      --input-bg: #faf5ff;
-      --tab-inactive: #7c3aed;
-      --accent: #9333ea;
-      --accent-hover: #7e22ce;
-      --accent-glow: rgba(147, 51, 234, 0.2);
-      --accent-text: #ffffff;
-    }
-
     body { 
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-      background: var(--bg); 
-      background-image: 
-        radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.15) 0%, transparent 60%),
-        radial-gradient(circle at 100% 100%, rgba(192, 132, 252, 0.08) 0%, transparent 50%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
       color: var(--text); 
       display: flex; 
       justify-content: center; 
       align-items: center; 
-      min-height: 100vh; 
-      margin: 0; 
-      transition: background 0.3s, color 0.3s;
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
       position: relative;
-    }
-
-    /* Floating Theme Controller */
-    .theme-toggle {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 8px 14px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      backdrop-filter: blur(8px);
-      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .theme-toggle:hover {
-      border-color: var(--accent);
-      box-shadow: 0 0 10px var(--accent-glow);
     }
 
     .card { 
       background: var(--card-bg); 
-      padding: 32px; 
-      border-radius: 16px; 
+      padding: 36px;
+      border-radius: 14px;
       width: 100%; 
-      max-width: 400px; 
+      max-width: 430px;
       box-sizing: border-box; 
-      text-align: center; 
-      border: 1px solid var(--border); 
-      backdrop-filter: blur(12px);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
-      transition: background 0.3s, border-color 0.3s;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.32);
+    }
+
+    .auth-heading {
+      margin-bottom: 30px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 24px;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 750;
+      letter-spacing: 0.2px;
+    }
+
+    .brand-mark {
+      width: 9px;
+      height: 9px;
+      border-radius: 3px;
+      background: #ffffff;
+    }
+
+    .auth-heading h1 {
+      margin: 0 0 9px;
+      color: #ffffff;
+      font-size: 28px;
+      line-height: 1.15;
+      letter-spacing: -0.6px;
+    }
+
+    .auth-heading p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
     }
 
     .tabs { 
       display: flex; 
-      justify-content: space-around; 
-      margin-bottom: 25px; 
+      gap: 24px;
+      justify-content: flex-start;
+      margin-bottom: 25px;
       border-bottom: 1px solid var(--border); 
     }
 
     .tab { 
       background: none; 
       border: none; 
-      color: var(--tab-inactive); 
-      padding: 10px 16px; 
+      color: var(--tab-inactive);
+      padding: 0 0 12px;
       cursor: pointer; 
-      font-weight: 700; 
-      font-size: 15px;
-      transition: color 0.2s; 
+      font-weight: 650;
+      font-size: 14px;
+      transition: color 0.2s;
     }
 
     .tab.active { 
-      color: var(--accent); 
+      color: #ffffff;
       border-bottom: 2px solid var(--accent); 
       margin-bottom: -1px; 
-      text-shadow: 0 0 8px var(--accent-glow);
     }
     
     .panel { display: none; }
     .panel.active { display: block; }
     
     .input-group { margin-bottom: 18px; text-align: left; }
-    label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--tab-inactive); }
+    label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 650; color: #d4d4d8; }
     input { 
       width: 100%; 
-      padding: 11px 14px; 
-      border-radius: 8px; 
+      padding: 12px 13px;
+      border-radius: 7px;
       border: 1px solid var(--border); 
       background: var(--input-bg); 
-      color: var(--text); 
+      color: #ffffff;
       box-sizing: border-box; 
       outline: none; 
       font-size: 14px;
-      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; 
+      transition: border-color 0.2s, background 0.2s;
     }
     input:focus { 
-      border-color: var(--accent); 
-      box-shadow: 0 0 10px var(--accent-glow);
+      border-color: #71717a;
+      box-shadow: none;
+      outline: 2px solid #3f3f46;
+      outline-offset: 1px;
     }
     
     button.submit-btn { 
       width: 100%; 
-      padding: 12px; 
-      background: var(--accent); 
-      color: var(--accent-text); 
+      padding: 12px;
+      background: #ffffff;
+      color: #09090b;
       border: none; 
-      border-radius: 8px; 
-      font-size: 15px;
-      font-weight: 800; 
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: 750;
       cursor: pointer; 
-      margin-top: 10px; 
+      margin-top: 12px;
       display: flex; 
       justify-content: center; 
       align-items: center; 
       gap: 8px;
-      box-shadow: 0 0 15px var(--accent-glow);
-      transition: opacity 0.2s, background 0.2s, transform 0.1s;
+      transition: background 0.2s, color 0.2s;
     }
 
     button.submit-btn:hover {
-      background: var(--accent-hover);
-      transform: translateY(-1px);
+      background: #e4e4e7;
     }
 
     button.submit-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
@@ -165,16 +158,16 @@
     .link-btn { 
       background: none; 
       border: none; 
-      color: var(--accent); 
+      color: #d4d4d8;
       cursor: pointer; 
       margin-top: 16px; 
-      font-size: 13.5px; 
-      font-weight: 600;
+      font-size: 13px;
+      font-weight: 550;
       transition: color 0.2s;
     }
 
     .link-btn:hover {
-      color: var(--accent-hover);
+      color: #ffffff;
       text-decoration: underline;
     }
 
@@ -227,15 +220,16 @@
 </head>
 <body>
 
-  <!-- Theme Toggle -->
-  <button class="theme-toggle" onclick="toggleTheme()">
-    <span id="theme-icon">☀️</span> <span id="theme-text">Light Mode</span>
-  </button>
-
   <!-- Toast Notification Placement Hub -->
   <div id="toastContainer" class="toast-container"></div>
 
   <div class="card">
+    <div class="auth-heading">
+      <div class="brand"><span class="brand-mark"></span><span>Showoff Links</span></div>
+      <h1>Welcome back</h1>
+      <p>Sign in to manage your links and shared assets.</p>
+    </div>
+
     <div class="tabs">
       <button id="tab-login" class="tab active" onclick="switchView('login')">Login</button>
       <button id="tab-register" class="tab" onclick="switchView('register')">Register</button>
@@ -244,19 +238,19 @@
     <!-- Login Form -->
     <div id="loginPanel" class="panel active">
       <form onsubmit="handleLogin(event)">
-        <div class="input-group"><label>Email</label><input type="email" id="loginEmail" required></div>
+        <div class="input-group"><label>Email or user name</label><input type="text" id="loginIdentifier" autocomplete="username" required></div>
         <div class="input-group"><label>Password</label><input type="password" id="loginPassword" required></div>
         <button type="submit" id="loginBtn" class="submit-btn">
           <span>Sign In</span>
         </button>
       </form>
-      <button class="link-btn" onclick="window.location.href='/forgot.html'">Forgot Password?</button>
+      <button class="link-btn" onclick="window.location.href='./forgot.html'">Forgot Password?</button>
     </div>
 
     <!-- Register Form -->
     <div id="registerPanel" class="panel">
       <form onsubmit="handleRegister(event)">
-        <div class="input-group"><label>Full Name</label><input type="text" id="regName" required></div>
+        <div class="input-group"><label>user Name</label><input type="text" id="regName" required></div>
         <div class="input-group"><label>Tagname (@)</label><input type="text" id="regTagname" placeholder="username" required></div>
         <div class="input-group"><label>Email</label><input type="email" id="regEmail" required></div>
         <div class="input-group"><label>Password</label><input type="password" id="regPassword" required></div>
@@ -269,34 +263,6 @@
 
   <script>
     const API_BASE = 'http://localhost:3000';
-
-    // Theme Switcher Logic
-    function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      
-      document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-      
-      updateThemeUI(newTheme);
-    }
-
-    function updateThemeUI(theme) {
-      const icon = document.getElementById('theme-icon');
-      const text = document.getElementById('theme-text');
-      if (theme === 'light') {
-        icon.innerText = '🌙';
-        text.innerText = 'Dark Mode';
-      } else {
-        icon.innerText = '☀️';
-        text.innerText = 'Light Mode';
-      }
-    }
-
-    // Load saved or default theme
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    updateThemeUI(savedTheme);
 
     // Switch Panel Controller
     function switchView(view) {
@@ -348,14 +314,16 @@
     async function handleLogin(e) {
       e.preventDefault();
       toggleLoading('loginBtn', true);
+      const loginIdentifierInput = document.getElementById('loginIdentifier');
+      const loginPasswordInput = document.getElementById('loginPassword');
       
       try {
         const res = await fetch(`${API_BASE}/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            email: loginEmail.value, 
-            password: loginPassword.value 
+            identifier: loginIdentifierInput.value.trim(),
+            password: loginPasswordInput.value
           })
         });
         const data = await res.json();
@@ -370,9 +338,9 @@ console.log(localStorage.getItem("userRole"));
           // Role-based redirection logic
           setTimeout(() => {
             if (data.user && data.user.role === 'admin') {
-              window.location.href = '/admin-dashboard.html';
+              window.location.href = './admin-dashboard.html';
             } else {
-              window.location.href = '/dashboard.html';
+              window.location.href = './dashboard.html';
             }
           }, 1000);
         } else { 

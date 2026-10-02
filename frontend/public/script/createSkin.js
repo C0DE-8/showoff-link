@@ -4,7 +4,7 @@ const userRole = localStorage.getItem('userRole');
 // Ensure user is admin on page load
 if (!sessionToken || userRole !== 'admin') {
   alert('Access denied. Admin credentials required.');
-  window.location.href = '/index.html';
+  window.location.href = './index.html';
 }
 
 const API_BASE = 'http://localhost:3000/api/admin';

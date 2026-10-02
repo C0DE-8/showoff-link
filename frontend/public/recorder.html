@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Voice Note Core — Terminal</title>
-  <script defer src="/script/recorder.js"></script>
+  <script defer src="./script/recorder.js"></script>
   <style>
     :root {
       --bg-gradient: radial-gradient(circle at center, #111827 0%, #030712 100%);
@@ -429,14 +429,10 @@
 
   <!-- Top Navigation Header -->
   <nav class="top-nav">
-    <a href="/dashboard.html" class="back-arrow">
+    <a href="./dashboard.html" class="back-arrow">
       <svg class="icon-svg" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
       Back to Dashboard
     </a>
-    <button class="theme-toggle-btn" id="themeBtn">
-      <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-      Light Mode
-    </button>
   </nav>
 
   <!-- Workspace Block -->
@@ -478,7 +474,7 @@
   <div class="modal-overlay" id="configModal">
     <div class="modal-box">
       <div class="modal-header">
-        <h3>Payload Parameters</h3>
+        <p>Quick setup</p>
         <button class="close-modal-btn" id="closeModalBtn">
           <svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>

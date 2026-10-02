@@ -208,36 +208,6 @@
       box-shadow: 0 0 25px rgba(168, 85, 247, 0.5);
     }
 
-    /* Real-Time Live Quick Analytics Snapshot */
-    .metrics-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 40px;
-    }
-
-    .stat-box {
-      background: rgba(19, 14, 38, 0.7);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .stat-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 6px;
-    }
-
-    .stat-value {
-      font-size: 24px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-
     /* Toast System */
     .toast-container {
       position: fixed;
@@ -273,7 +243,7 @@
   </style>
 
   <!-- Separate JavaScript Logic using defer -->
-<script defer src="script/admin.js" defer></script>
+<script defer src="./script/admin.js" defer></script>
 </head>
 <body>
 
@@ -288,41 +258,14 @@
         <span class="brand-title">Operations Hub</span>
       </div>
       <div class="header-actions">
-        <a href="/admin-dashboard.html" class="btn">Admin Workspace</a>
+        <a href="./admin-dashboard.html" class="btn">Admin Workspace</a>
         <button class="btn btn-danger" id="logoutBtn">Sign Out</button>
       </div>
     </header>
 
-    <!-- Welcome Section -->
-    <section class="welcome-section">
-      <h1>System Overview</h1>
-      <p>Manage platform skins, monitor burn statistics, and inspect system telemetry.</p>
-    </section>
-
-    <!-- Quick Live Metrics Snapshot -->
-    <div class="metrics-row">
-      <div class="stat-box">
-        <div class="stat-label">Registered Users</div>
-        <div class="stat-value" id="statUsers">--</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Active Notes</div>
-        <div class="stat-value" id="statNotes">--</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Image Storage</div>
-        <div class="stat-value" id="statStorage">-- MB</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Circulating Tokens</div>
-        <div class="stat-value" id="statTokens">--</div>
-      </div>
-    </div>
-
     <!-- Navigation Hub Cards -->
     <div class="portal-grid">
       
-      <!-- Card 1: Platform Analytics -->
       <div class="portal-card">
         <div>
           <div class="card-icon">📊</div>
@@ -331,7 +274,7 @@
             <p>upload cool skins</p>
           </div>
         </div>
-        <a href="/adminSkin.html" class="btn-action">
+        <a href="./adminSkin.html" class="btn-action">
           <span>View</span>
           <span>→</span>
         </a>
@@ -346,7 +289,7 @@
             <p>verify tokens flow.</p>
           </div>
         </div>
-        <a href="/token-manger.html" class="btn-action">
+        <a href="./token-manger.html" class="btn-action">
           <span>Manage tokens</span>
           <span>→</span>
         </a>

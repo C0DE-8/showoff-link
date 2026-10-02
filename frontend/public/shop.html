@@ -52,15 +52,7 @@
     margin-top: 0.3rem;
   }
     /* Single-Line Inline Header Flex Alignment */
-    .shop-header {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-evnenly;
-      gap: 10rem;
-      margin-bottom: 1.5rem;
-      width: 100%;
-    }
+
   .skin-info{
     display: flex;
     flex-direction: column;
@@ -83,11 +75,33 @@
       color: var(--accent-hover);
     }
 
-    .shop-title {
-      font-weight: bold;
-      text-align: center;
-      
-    }
+  .shop-title {
+    width: fit-content;
+    margin: 0 auto 0.8rem;
+    padding: 0.45rem 1.4rem;
+
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 1px;
+
+    color: #fff;
+
+    /* Glass */
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    /* Subtle border */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+
+    /* Soft depth */
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
 
     /* Global Notification Banner */
     .status-message {
@@ -171,6 +185,7 @@
       border-radius: 6px;
       font-size: 0.85rem;
       font-weight: 600;
+      margin-top: 0.7rem;
     }
 
     /* Suppress SVGs, token icons, and emojis */
@@ -214,11 +229,8 @@
 </head>
 <body>
   <div class="shop-container">
-    <!-- Header with Back Link and Title side-by-side -->
-    <header class="shop-header">
-      <a href="/dashboard.html" class="btn-back">&larr; Back to Dashboard</a>
+  
       <h2 class="shop-title">Skin Shop</h2>
-    </header>
 
     <!-- Global Notification Banner -->
     <div id="statusMessage" class="status-message hidden"></div>
@@ -231,6 +243,6 @@
     </main>
   </div>
 
-  <script src="script/shop.js"></script>
+  <script src="./script/shop.js"></script>
 </body>
 </html>

@@ -25,13 +25,9 @@
 
     /* Standalone Container */
     .token-container {
-      background: #111622;
-      border: 1px solid #232b3e;
-      border-radius: 20px;
       width: 100%;
       max-width: 840px;
       padding: 32px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65);
     }
 
     /* Header & Navigation */
@@ -205,7 +201,7 @@
     .buy-btn {
       width: 100%;
       padding: 12px 16px;
-      background: #2563eb;
+      background: #a78bfa;
       color: #ffffff;
       border: none;
       border-radius: 8px;
@@ -213,10 +209,6 @@
       font-size: 0.92rem;
       cursor: pointer;
       transition: background 0.2s ease, transform 0.1s ease;
-    }
-
-    .buy-btn:hover {
-      background: #1d4ed8;
     }
 
     .buy-btn:active {
@@ -236,12 +228,13 @@
     /* Footer Info */
     .page-footer {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       margin-top: 24px;
       padding-top: 16px;
       border-top: 1px solid #1a2232;
       font-size: 0.8rem;
       color: #64748b;
+      text-align: center;
     }
 
     /* Dynamic Payment Modal Styles */
@@ -467,16 +460,16 @@
         <div>
           <span class="tier-badge">Trial Pack</span>
           <div class="tier-title">Starter</div>
-          <div class="token-amount">5 <span>Tokens</span></div>
+          <div class="token-amount">7 <span>Tokens</span></div>
           <div class="price">₦500</div>
           <ul class="feature-list">
-            <li><strong>5</strong> Text Capsules</li>
+            <li><strong>7</strong> Text Capsules</li>
             <li>OR <strong>2</strong> Voice / Image drops</li>
             <li>Instant balance credit</li>
           </ul>
         </div>
-        <button class="buy-btn" data-tokens="5" data-amount="500">
-          Get 5 Tokens
+        <button class="buy-btn" data-tokens="7" data-amount="500">
+          Get 7 Tokens
         </button>
       </div>
 
@@ -485,16 +478,16 @@
         <div>
           <span class="tier-badge bonus">+1 Bonus Token</span>
           <div class="tier-title">Popular</div>
-          <div class="token-amount">11 <span>Tokens</span></div>
+          <div class="token-amount">15 <span>Tokens</span></div>
           <div class="price">₦1,000</div>
           <ul class="feature-list">
-            <li><strong>11</strong> Text Capsules</li>
+            <li><strong>15</strong> Text Capsules</li>
             <li>OR <strong>5</strong> Voice / Image drops</li>
             <li>Skin shop progress</li>
           </ul>
         </div>
-        <button class="buy-btn featured-btn" data-tokens="11" data-amount="1000">
-          Get 11 Tokens
+        <button class="buy-btn featured-btn" data-tokens="15" data-amount="1000">
+          Get 15 Tokens
         </button>
       </div>
 
@@ -524,8 +517,7 @@
 
     <!-- Footer Info -->
     <div class="page-footer">
-      <span>🔒 Payments processed securely</span>
-      <span>Base Rate: 1 Token = ₦100</span>
+      <span>Payments processed securely</span>
     </div>
 
   </div>

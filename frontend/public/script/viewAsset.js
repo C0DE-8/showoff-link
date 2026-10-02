@@ -37,7 +37,7 @@ async function executeAssetDecryptionPipeline() {
       if (response.status === 410) {
         terminateSessionWithError("This asset reached its view limit and expired.");
         setTimeout(() => {
-          window.location.href = '/dashboard.html';
+          window.location.href = './dashboard.html';
         }, 3000);
         return;
       }
@@ -91,7 +91,7 @@ function beginSelfDestructSequence() {
         URL.revokeObjectURL(decryptedAsset.src);
       }
 
-      window.location.href = '/dashboard.html';
+      window.location.href = './dashboard.html';
     }
   }, 1000);
 }
@@ -110,7 +110,7 @@ function terminateSessionWithError(messageText) {
       <div class="error-slate">
         <span class="error-icon">🔒</span>
         <p class="error-msg">${messageText}</p>
-        <button onclick="window.location.href='/dashboard.html'" class="return-btn">Return to Dashboard</button>
+        <button onclick="window.location.href='./dashboard.html'" class="return-btn">Return to Dashboard</button>
       </div>
     `;
   }

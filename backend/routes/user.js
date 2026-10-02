@@ -1,6 +1,7 @@
 const express = require('express');
 const { protect } = require('./auth'); // Secure using your factory function middleware
 const router = express.Router();
+const bcrypt =require("bcrypt")
 
 router.get('/profile', protect(), async (req, res) => {
   const pool = req.app.get('pool');
@@ -8,12 +9,13 @@ router.get('/profile', protect(), async (req, res) => {
 
   try {
     const result = await pool.query(
-      'SELECT id, full_name, email, tagname, tokens, role FROM users WHERE id = $1', 
+      'SELECT id, full_name, email, tagname, tokens, role FROM users WHERE id = ?',
       [userId]
     );
-    if (result.rows.length === 0) return res.status(404).json({ error: 'User not found.' });
+    const [rows] = result;
+    if (rows.length === 0) return res.status(404).json({ error: 'User not found.' });
     
-    return res.json({ success: true, profile: result.rows[0] });
+    return res.json({ success: true, profile: rows[0] });
   } catch (err) {
     return res.status(500).json({ error: 'Failed to retrieve profile records.' });
   }
@@ -36,15 +38,15 @@ router.put('/update-tagname', protect(), async (req, res) => {
   try {
     const updateQuery = `
       UPDATE users 
-      SET tagname = $1 
-      WHERE id = $2 
-      RETURNING id, tagname
+      SET tagname = ?
+      WHERE id = ?
     `;
-    const result = await pool.query(updateQuery, [new_tagname.toLowerCase().trim(), userId]);
-    return res.json({ success: true, message: 'Tagname updated successfully.', tagname: result.rows[0].tagname });
+    await pool.query(updateQuery, [new_tagname.toLowerCase().trim(), userId]);
+    const [rows] = await pool.query('SELECT id, tagname FROM users WHERE id = ?', [userId]);
+    return res.json({ success: true, message: 'Tagname updated successfully.', tagname: rows[0].tagname });
     
   } catch (err) {
-    if (err.code === '23505') return res.status(400).json({ error: 'This tagname is already taken.' });
+    if (err.code === 'ER_DUP_ENTRY') return res.status(400).json({ error: 'This tagname is already taken.' });
     return res.status(500).json({ error: 'Failed to update tagname configuration.' });
   }
 });
@@ -65,57 +67,61 @@ router.post('/gift-tokens', protect(), async (req, res) => {
     return res.status(400).json({ error: 'Valid recipient tagname and positive token volume required.' });
   }
 
+  let connection;
   try {
     // Start an atomic isolation transaction block
-    await pool.query('BEGIN');
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
 
     // 2. Fetch sender details including password_hash for authorization verification
-    const senderRes = await pool.query(
-      'SELECT tokens, tagname, password_hash FROM users WHERE id = $1 FOR UPDATE', 
+    const [senderRows] = await connection.query(
+      'SELECT tokens, tagname, password_hash FROM users WHERE id = ? FOR UPDATE',
       [senderId]
     );
-    const sender = senderRes.rows[0];
+    const sender = senderRows[0];
 
     // 3. Verify security credentials before mutating state parameters
     const isPasswordMatch = await bcrypt.compare(confirm_password, sender.password_hash);
     if (!isPasswordMatch) {
-      await pool.query('ROLLBACK');
+      await connection.rollback();
       return res.status(401).json({ error: 'Security authorization failed. Incorrect password.' });
     }
 
     // 4. Validate asset balance checks
     if (sender.tokens < giftAmount) {
-      await pool.query('ROLLBACK');
+      await connection.rollback();
       return res.status(400).json({ error: `Insufficient token balance. You only have ${sender.tokens} tokens.` });
     }
 
     // 5. Prevent self-gifting loops
     const cleanRecipientTag = recipient_tagname.toLowerCase().trim();
     if (sender.tagname === cleanRecipientTag) {
-      await pool.query('ROLLBACK');
+      await connection.rollback();
       return res.status(400).json({ error: 'You cannot send gift credits to your own tagname configuration.' });
     }
 
     // 6. Verify and lock the target recipient record row
-    const recipientRes = await pool.query('SELECT id FROM users WHERE tagname = $1 FOR UPDATE', [cleanRecipientTag]);
-    if (recipientRes.rows.length === 0) {
-      await pool.query('ROLLBACK');
+    const [recipientRows] = await connection.query('SELECT id FROM users WHERE tagname = ? FOR UPDATE', [cleanRecipientTag]);
+    if (recipientRows.length === 0) {
+      await connection.rollback();
       return res.status(444).json({ error: `No active profile assigned to tagname handle "${recipient_tagname}".` });
     }
-    const recipientId = recipientRes.rows[0].id;
+    const recipientId = recipientRows[0].id;
 
     // 7. Atomic balance balance operations execution
-    await pool.query('UPDATE users SET tokens = tokens - $1 WHERE id = $2', [giftAmount, senderId]);
-    await pool.query('UPDATE users SET tokens = tokens + $1 WHERE id = $2', [giftAmount, recipientId]);
+    await connection.query('UPDATE users SET tokens = tokens - ? WHERE id = ?', [giftAmount, senderId]);
+    await connection.query('UPDATE users SET tokens = tokens + ? WHERE id = ?', [giftAmount, recipientId]);
 
     // Commit adjustments down permanently
-    await pool.query('COMMIT');
+    await connection.commit();
     return res.json({ success: true, message: `Successfully transferred ${giftAmount} tokens directly to @${cleanRecipientTag}.` });
 
   } catch (err) {
-    await pool.query('ROLLBACK');
+    if (connection) await connection.rollback();
     console.error(err);
     return res.status(500).json({ error: 'Transaction pipeline crashed processing peer credit.' });
+  } finally {
+    if (connection) connection.release();
   }
 });
 

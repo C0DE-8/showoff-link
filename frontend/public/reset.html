@@ -5,56 +5,153 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Set New Password</title>
   <style>
-    body { font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-    .card { background: #1e293b; padding: 30px; border-radius: 12px; width: 100%; max-width: 380px; box-sizing: border-box; border: 1px solid #334155; }
-    .input-group { margin-bottom: 20px; }
-    label { display: block; margin-bottom: 5px; font-size: 14px; color: #94a3b8; }
-    input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
-    button.submit-btn { width: 100%; padding: 12px; background: #c084fc; color: #0f172a; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    .alert { padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; display: none; }
-    .alert-error { background: #7f1d1d; color: #fca5a5; }
-    .alert-success { background: #064e3b; color: #6ee7b7; }
+    :root {
+      --bg: #1a1a1f;
+      --card-bg: #242429;
+      --text: #ffffff;
+      --muted: #a1a1aa;
+      --border: #3f3f46;
+      --input-bg: #1d1d22;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      padding: 36px;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 430px;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.32);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .brand-mark {
+      width: 9px;
+      height: 9px;
+      border-radius: 3px;
+      background: #ffffff;
+    }
+
+    h1 { margin: 0 0 9px; font-size: 28px; line-height: 1.15; letter-spacing: -0.6px; }
+    .intro { margin: 0 0 30px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .input-group { margin-bottom: 18px; }
+    label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 650; color: #d4d4d8; }
+    input { width: 100%; padding: 12px 13px; border-radius: 7px; border: 1px solid var(--border); background: var(--input-bg); color: #ffffff; outline: none; font-size: 14px; }
+    input:focus { border-color: #71717a; outline: 2px solid #3f3f46; outline-offset: 1px; }
+    input.code-input { letter-spacing: 0.3em; font-size: 18px; font-weight: 700; }
+    button.submit-btn { width: 100%; padding: 12px; margin-top: 12px; background: #ffffff; color: #09090b; border: none; border-radius: 7px; font-size: 14px; font-weight: 750; cursor: pointer; }
+    button.submit-btn:hover { background: #e4e4e7; }
+    button.submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    .alert { padding: 11px 13px; border-radius: 7px; margin-bottom: 18px; font-size: 13px; display: none; }
+    .alert-error { background: #3b1d22; border: 1px solid #7f1d2d; color: #fecdd3; }
+    .alert-success { background: #193329; border: 1px solid #166534; color: #bbf7d0; }
+    .back-btn { display: block; background: none; border: none; color: #d4d4d8; cursor: pointer; margin: 18px auto 0; font-size: 13px; }
+    .back-btn:hover { color: #ffffff; text-decoration: underline; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h3>Reset Password</h3>
+    <div class="brand"><span class="brand-mark"></span><span>Showoff Links</span></div>
+    <h1>Set a new password</h1>
+    <p class="intro">Choose a strong password to secure your account.</p>
     <div id="alert" class="alert"></div>
     <form onsubmit="handleReset(event)">
       <div class="input-group">
-        <label>New Secure Password</label>
-        <input type="password" id="newPassword" required>
+        <label for="resetCode">Six-digit reset code</label>
+        <input type="text" id="resetCode" class="code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required>
       </div>
-      <button type="submit" class="submit-btn">Change Password</button>
+      <div class="input-group">
+        <label for="newPassword">New password</label>
+        <input type="password" id="newPassword" minlength="8" autocomplete="new-password" required>
+      </div>
+      <div class="input-group">
+        <label for="confirmPassword">Confirm password</label>
+        <input type="password" id="confirmPassword" minlength="8" autocomplete="new-password" required>
+      </div>
+      <button type="submit" id="resetButton" class="submit-btn">Change password</button>
     </form>
+    <button class="back-btn" onclick="window.location.href='./authHub.html'">Back to login</button>
   </div>
 
   <script>
     async function handleReset(e) {
       e.preventDefault();
       const alertBox = document.getElementById('alert');
+      const resetButton = document.getElementById('resetButton');
+      const resetCodeInput = document.getElementById('resetCode');
+      const newPasswordInput = document.getElementById('newPassword');
+      const confirmPasswordInput = document.getElementById('confirmPassword');
       const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get('token');
+      const code = urlParams.get('code');
+
+      if (code && !resetCodeInput.value) resetCodeInput.value = code;
+
+      const resetCode = resetCodeInput.value.trim();
+      if (!/^\d{6}$/.test(resetCode)) {
+        alertBox.className = 'alert alert-error';
+        alertBox.innerText = 'Enter the six-digit reset code from your email.';
+        alertBox.style.display = 'block';
+        return;
+      }
+
+      if (newPasswordInput.value !== confirmPasswordInput.value) {
+        alertBox.className = 'alert alert-error';
+        alertBox.innerText = 'Passwords do not match.';
+        alertBox.style.display = 'block';
+        return;
+      }
+
+      resetButton.disabled = true;
+      resetButton.innerText = 'Updating password...';
 
       try {
-        const res = await fetch('/auth/reset-password', {
+        const res = await fetch('http://localhost:3000/auth/reset-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, newPassword: newPassword.value })
+          body: JSON.stringify({ token: resetCode, newPassword: newPasswordInput.value })
         });
         const data = await res.json();
         if(res.ok) {
           alertBox.className = "alert alert-success";
           alertBox.innerText = "Password updated! Going back to login page...";
           alertBox.style.display = "block";
-          setTimeout(() => { window.location.href = '/'; }, 2000);
+          setTimeout(() => { window.location.href = './authHub.html'; }, 2000);
         } else {
           alertBox.className = "alert alert-error";
           alertBox.innerText = data.error;
           alertBox.style.display = "block";
         }
-      } catch { alertBox.innerText = "Connection error."; alertBox.style.display = "block"; }
+      } catch {
+        alertBox.className = 'alert alert-error';
+        alertBox.innerText = 'Connection error. Please try again.';
+        alertBox.style.display = 'block';
+      } finally {
+        resetButton.disabled = false;
+        resetButton.innerText = 'Change password';
+      }
     }
   </script>
 </body>

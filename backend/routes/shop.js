@@ -6,15 +6,15 @@ router.get('/payment-details', async (req, res) => {
   const pool = req.app.get('pool');
 
   try {
-    const result = await pool.query(
+    const [rows] = await pool.query(
       'SELECT bank_name, account_number, account_name FROM bank_account_settings WHERE id = 1'
     );
 
-    if (result.rows.length === 0) {
+    if (rows.length === 0) {
       return res.status(404).json({ error: 'Bank account details are not configured.' });
     }
 
-    return res.json({ success: true, data: result.rows[0] });
+    return res.json({ success: true, data: rows[0] });
   } catch (err) {
     console.error('Error fetching bank details:', err);
     return res.status(500).json({ error: 'Failed to retrieve payment details.' });
@@ -30,24 +30,38 @@ router.post('/submit-request', protect(), async (req, res) => {
   // Extract userId directly from authenticated user session/token
   const userId = req.user.id; 
   const { tokensRequested, amountNgn, receiptUrl } = req.body;
+  const tokenPackages = new Map([
+    [7, 500],
+    [15, 1000],
+    [60, 5000]
+  ]);
 
   if (!tokensRequested || !amountNgn || !receiptUrl) {
     return res.status(400).json({ error: 'Missing required request parameters.' });
   }
 
+  const requestedTokens = Number(tokensRequested);
+  const requestedAmount = Number(amountNgn);
+  if (!Number.isInteger(requestedTokens) || tokenPackages.get(requestedTokens) !== requestedAmount) {
+    return res.status(400).json({ error: 'Invalid token package selected.' });
+  }
+
   try {
     const query = `
       INSERT INTO token_purchases (user_id, tokens_requested, amount_ngn, receipt_url, status, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, 'pending', NOW(), NOW())
-      RETURNING id, status, created_at
+      VALUES (?, ?, ?, ?, 'pending', NOW(), NOW())
     `;
 
-    const result = await pool.query(query, [userId, tokensRequested, amountNgn, receiptUrl]);
+    const [result] = await pool.query(query, [userId, requestedTokens, requestedAmount, receiptUrl]);
+    const [rows] = await pool.query(
+      'SELECT id, status, created_at FROM token_purchases WHERE id = ?',
+      [result.insertId]
+    );
 
     return res.status(201).json({
       success: true,
       message: 'Top-up request submitted successfully. Awaiting approval.',
-      data: result.rows[0]
+      data: rows[0]
     });
   } catch (err) {
     console.error('Error submitting top-up request:', err);
@@ -66,50 +80,50 @@ router.post('/verify-topup', protect(['admin']), async (req, res) => {
     return res.status(400).json({ error: 'Invalid action parameter.' });
   }
 
-  const client = await pool.connect();
+  const connection = await pool.getConnection();
 
   try {
-    await client.query('BEGIN');
+    await connection.beginTransaction();
 
     // Lock request row to prevent race conditions or double claims
-    const requestRes = await client.query(
-      'SELECT user_id, tokens_requested, status FROM token_purchases WHERE id = $1 FOR UPDATE',
+    const [requestRows] = await connection.query(
+      'SELECT user_id, tokens_requested, status FROM token_purchases WHERE id = ? FOR UPDATE',
       [requestId]
     );
 
-    if (requestRes.rows.length === 0) {
-      await client.query('ROLLBACK');
+    if (requestRows.length === 0) {
+      await connection.rollback();
       return res.status(404).json({ error: 'Purchase request not found.' });
     }
 
-    const request = requestRes.rows[0];
+    const request = requestRows[0];
 
     if (request.status !== 'pending') {
-      await client.query('ROLLBACK');
+      await connection.rollback();
       return res.status(400).json({ error: `Request has already been ${request.status}.` });
     }
 
     if (action === 'approve') {
       // Allocate tokens directly to user wallet metrics
-      await client.query(
-        'UPDATE users SET tokens = tokens + $1 WHERE id = $2',
+      await connection.query(
+        'UPDATE users SET tokens = tokens + ? WHERE id = ?',
         [request.tokens_requested, request.user_id]
       );
 
       // Set status to approved
-      await client.query(
-        "UPDATE token_purchases SET status = 'approved', updated_at = NOW() WHERE id = $1",
+      await connection.query(
+        "UPDATE token_purchases SET status = 'approved', updated_at = NOW() WHERE id = ?",
         [requestId]
       );
     } else {
       // Set status to rejected
-      await client.query(
-        "UPDATE token_purchases SET status = 'rejected', updated_at = NOW() WHERE id = $1",
+      await connection.query(
+        "UPDATE token_purchases SET status = 'rejected', updated_at = NOW() WHERE id = ?",
         [requestId]
       );
     }
 
-    await client.query('COMMIT');
+    await connection.commit();
 
     return res.json({
       success: true,
@@ -117,11 +131,11 @@ router.post('/verify-topup', protect(['admin']), async (req, res) => {
     });
 
   } catch (err) {
-    await client.query('ROLLBACK');
+    await connection.rollback();
     console.error('Transactional resolution processing error:', err);
     return res.status(500).json({ error: 'Transactional resolution processing error.' });
   } finally {
-    client.release();
+    connection.release();
   }
 });
 
@@ -139,21 +153,23 @@ router.put('/admin/update-account', protect(['admin']), async (req, res) => {
   try {
     const query = `
       INSERT INTO bank_account_settings (id, bank_name, account_number, account_name, updated_at)
-      VALUES (1, $1, $2, $3, NOW())
-      ON CONFLICT (id) DO UPDATE SET
-        bank_name = EXCLUDED.bank_name,
-        account_number = EXCLUDED.account_number,
-        account_name = EXCLUDED.account_name,
+      VALUES (1, ?, ?, ?, NOW())
+      ON DUPLICATE KEY UPDATE
+        bank_name = VALUES(bank_name),
+        account_number = VALUES(account_number),
+        account_name = VALUES(account_name),
         updated_at = NOW()
-      RETURNING *
     `;
 
-    const result = await pool.query(query, [bankName, accountNumber, accountName]);
+    await pool.query(query, [bankName, accountNumber, accountName]);
+    const [rows] = await pool.query(
+      'SELECT * FROM bank_account_settings WHERE id = 1'
+    );
 
     return res.json({
       success: true,
       message: 'Payment bank details successfully updated.',
-      data: result.rows[0]
+      data: rows[0]
     });
   } catch (err) {
     console.error('Error updating bank settings:', err);
@@ -183,11 +199,11 @@ router.get('/admin/pending-purchases', protect(['admin']), async (req, res) => {
       ORDER BY tp.created_at DESC
     `;
 
-    const result = await pool.query(query);
+    const [rows] = await pool.query(query);
 
     return res.json({
       success: true,
-      data: result.rows
+      data: rows
     });
   } catch (err) {
     console.error('Error fetching pending purchases:', err);

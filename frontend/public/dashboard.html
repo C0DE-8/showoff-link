@@ -13,9 +13,6 @@
       --text-muted: #8e8e93;
       --accent: #a855f7;
       
-      /* Light Mode Logout Styling */
-      --btn-white-bg: #ffffff;
-      --btn-white-text: #09090b;
     }
 
     * {
@@ -78,8 +75,8 @@
 
     /* Light Mode Logout Button */
     .btn-logout-pill {
-      background: var(--btn-white-bg);
-      color: var(--btn-white-text);
+      background:white;
+      color: black;
       border: none;
       padding: 0.45rem 0.95rem;
       border-radius: 9999px;
@@ -217,7 +214,7 @@
         <div class="user-avatar">JD</div>
         <span class="user-name">Account</span>
       </div>
-      <button class="btn-logout-pill" onclick="handleLogout()">Log out</button>
+      <button class="btn-logout-pill">Log out</button>
     </header>
 
     <!-- Main Balance Card -->
@@ -230,8 +227,8 @@
       <div class="balance-actions">
       
         <button class="pill-btn primary" id="purchaseBtn">+ Top up</button>
-        <a href="/portal.html" class="pill-btn">Portal</a>
-        <a href="/shop.html" class="pill-btn">Store</a>
+        <a href="./giftToken.html" class="pill-btn">Gift</a>
+        <a href="./shop.html" class="pill-btn">Store</a>
       </div>
     </section>
 
@@ -239,7 +236,7 @@
     <main class="bento-grid">
       
       <!-- Text Capsule -->
-      <a href="/text-handler.html" class="bento-card">
+      <a href="./text-handler.html" class="bento-card">
         <div>
           <div class="card-title">Text Capsule</div>
           <div class="card-main-stat">Decrypt</div>
@@ -248,7 +245,7 @@
       </a>
 
       <!-- Image Canvas -->
-      <a href="/image-handler.html" class="bento-card gradient-card">
+      <a href="./image-handler.html" class="bento-card gradient-card">
         <div>
           <div class="card-title">Image Canvas</div>
           <div class="card-main-stat">Wrappers</div>
@@ -257,7 +254,7 @@
       </a>
 
       <!-- Voice Note -->
-      <a href="/recorder.html" class="bento-card purple-card">
+      <a href="./recorder.html" class="bento-card purple-card">
         <div>
           <div class="card-title">Voice Note</div>
           <div class="card-main-stat">Audio Clips</div>
@@ -266,7 +263,7 @@
       </a>
 
       <!-- Profile & Settings -->
-      <a href="/settings.html" class="bento-card blue-card">
+      <a href="./settings.html" class="bento-card blue-card">
         <div>
           <div class="card-title">Profile</div>
           <div class="card-main-stat">Settings</div>
@@ -278,6 +275,6 @@
 
   </div>
 
-  <script src="script/dashboard.js"></script>
+  <script src="./script/dashboard.js"></script>
 </body>
 </html>

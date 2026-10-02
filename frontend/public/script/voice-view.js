@@ -1,6 +1,7 @@
 const API_BASE = 'http://localhost:3000/api/audio';
 const urlParams = new URLSearchParams(window.location.search);
 const viewId = urlParams.get('viewId');
+const token = localStorage.getItem('authToken');
 let audio = null;
 
 const ICONS = {
@@ -10,8 +11,55 @@ const ICONS = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Inject clean dark-mode styles for the expired/error card layout
+  const styleTag = document.createElement('style');
+  styleTag.textContent = `
+    .expired-card-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      text-align: center;
+    }
+    .expired-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+    .expired-subtitle {
+      font-size: 0.9rem;
+      color: #8e8e93;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+    .showoff-btn {
+      padding: 13px 26px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #ffffff;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35);
+      outline: none;
+    }
+    .showoff-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(168, 85, 247, 0.55);
+      opacity: 0.95;
+    }
+    .showoff-btn:active {
+      transform: translateY(0);
+    }
+  `;
+  document.head.appendChild(styleTag);
+
   if (!viewId) {
-    showFatal("Missing package token identification identifier.");
+    showFatal("Link Invalid", "Missing voice note identification token.");
     return;
   }
   setupStream();
@@ -19,10 +67,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function setupStream() {
   try {
-    const response = await fetch(`${API_BASE}/stream-voice/${viewId}`);
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const streamUrl = `${API_BASE}/stream-voice/${viewId}${token ? `?token=${token}` : ''}`;
+    const response = await fetch(streamUrl, { headers });
 
     if (!response.ok) {
-      showFatal("Payload expired or database access denied.");
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 403) {
+        showFatal("Access Restricted", data.error || "This voice note was not intended for your account.");
+      } else if (response.status === 410) {
+        showFatal("Payload Expired", "This voice note reached its viewing limit and self-destructed.");
+      } else if (response.status === 404) {
+        showFatal("Link Expired", "This voice note does not exist or has already been purged.");
+      } else {
+        showFatal("Unavailable", data.error || "Database access denied.");
+      }
       return;
     }
 
@@ -35,7 +98,7 @@ async function setupStream() {
         document.body.style.backgroundImage = `url('/Skins/${skinImage}')`;
       }
     } else {
-      document.body.style.backgroundImage = "url('/Skins/Sad.jpg')";
+      document.body.style.backgroundImage = "url('./Skins/Sad.jpg')";
     }
 
     const blob = await response.blob();
@@ -64,7 +127,7 @@ async function setupStream() {
     });
 
     audio.addEventListener('error', () => {
-      showFatal("Payload expired or database access denied.");
+      showFatal("Playback Error", "Failed to stream or decode audio payload.");
     });
 
     audio.addEventListener('ended', burnPayload);
@@ -74,7 +137,7 @@ async function setupStream() {
       playBtn.addEventListener('click', toggle);
     }
   } catch (e) {
-    showFatal("Connection sync error.");
+    showFatal("Connection Sync Error", "Unable to establish secure stream channel.");
   }
 }
 
@@ -110,13 +173,15 @@ async function burnPayload() {
   }
 
   try {
-    await fetch(`${API_BASE}/register-play/${viewId}`, { method: 'POST' });
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    await fetch(`${API_BASE}/register-play/${viewId}`, { method: 'POST', headers });
   } catch (e) {
     console.error(e);
   }
 
   setTimeout(() => {
-    window.location.href = "/dashboard.html";
+    window.location.href = "./dashboard.html";
   }, 3000);
 }
 
@@ -127,23 +192,27 @@ function formatTime(secs) {
   return `${m}:${s}`;
 }
 
-function showFatal(msg) {
-  const err = document.getElementById('err');
-  const panel = document.getElementById('panel');
-  const playBtn = document.getElementById('play');
+function showFatal(title, subtitle = '') {
   const loader = document.getElementById('loader');
+  const panel = document.getElementById('panel');
 
   if (loader) loader.remove();
 
-  if (err) {
-    err.innerText = msg;
-    err.style.display = 'block';
-  }
   if (panel) {
     panel.classList.add('ready');
-    panel.style.opacity = '0.1';
+    panel.style.opacity = '1';
+    
+    // Replace player elements cleanly inside panel without banner/red styling
+    panel.innerHTML = `
+      <div class="expired-card-content">
+        <div class="expired-title">${title}</div>
+        <div class="expired-subtitle">${subtitle}</div>
+        <button id="showoffActionBtn" class="showoff-btn"> Start Creating Showoff Links now!</button>
+      </div>
+    `;
+
+    document.getElementById('showoffActionBtn').addEventListener('click', () => {
+      window.location.href = './index.html';
+    });
   }
-  if (playBtn) playBtn.disabled = true;
 }
-
-

@@ -2,9 +2,10 @@
 const API_BASE = 'http://localhost:3000/api/user';
 const token = localStorage.getItem('authToken');
 
+
 // Routing Guard Check
 if (!token) {
-  window.location.href = '/index.html';
+  window.location.href = './index.html';
 }
 
 // System Initializers
@@ -13,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Attach Form Form Interceptors
   document.getElementById('tagnameForm').addEventListener('submit', handleTagnameUpdate);
-  document.getElementById('giftForm').addEventListener('submit', handleGiftTokens);
 });
 
 // Fetch Identity Record Data
@@ -75,44 +75,6 @@ async function handleTagnameUpdate(e) {
   }
 }
 
-// Peer Banking Credit Gift Module
-async function handleGiftTokens(e) {
-  e.preventDefault();
-  const recipient = document.getElementById('inpGiftRecipient').value;
-  const amount = document.getElementById('inpGiftAmount').value;
-  const password = document.getElementById('inpGiftPassword').value;
-
-  toggleBtnLoading('btnGift', true, 'Authorize Asset Transfer');
-
-  try {
-    const res = await fetch(`${API_BASE}/gift-tokens`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        recipient_tagname: recipient,
-        amount_to_gift: amount,
-        confirm_password: password
-      })
-    });
-    const data = await res.json();
-
-    if (res.ok) {
-      triggerToast(data.message, 'success');
-      e.target.reset();
-      // Instantly re-evaluate data grids to sync deduction balances safely
-      fetchUserProfile();
-    } else {
-      triggerToast(data.error || 'Transaction block dropped by terminal.', 'error');
-    }
-  } catch (err) {
-    triggerToast('Banking transaction pipeline failure.', 'error');
-  } finally {
-    toggleBtnLoading('btnGift', false, 'Authorize Asset Transfer');
-  }
-}
 
 // UI Elements & Animation Utility Rules
 function toggleBtnLoading(btnId, isLoading, defaultText) {
@@ -144,5 +106,5 @@ function triggerToast(message, type = 'error') {
 
 function logout() {
   localStorage.clear();
-  window.location.href = '/index.html';
+  window.location.href = './index.html';
 }

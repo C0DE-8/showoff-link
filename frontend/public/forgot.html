@@ -5,54 +5,79 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recover Password</title>
   <style>
-    body { font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-    .card { background: #1e293b; padding: 30px; border-radius: 12px; width: 100%; max-width: 380px; box-sizing: border-box; border: 1px solid #334155; }
-    .input-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-size: 14px; color: #94a3b8; }
-    input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; outline: none; }
-    button.submit-btn { width: 100%; padding: 12px; background: #c084fc; color: #0f172a; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    .alert { padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; display: none; }
-    .alert-error { background: #7f1d1d; color: #fca5a5; }
-    .alert-success { background: #064e3b; color: #6ee7b7; }
-    .back-btn { background: none; border: none; color: #c084fc; cursor: pointer; margin-top: 15px; width:100%; text-align:center; }
+    :root { --bg: #1a1a1f; --card-bg: #242429; --text: #ffffff; --muted: #a1a1aa; --border: #3f3f46; --input-bg: #1d1d22; }
+    * { box-sizing: border-box; }
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 24px; }
+    .card { background: var(--card-bg); padding: 36px; border-radius: 14px; width: 100%; max-width: 430px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.32); }
+    .brand { display: inline-flex; align-items: center; gap: 9px; margin-bottom: 24px; font-size: 14px; font-weight: 750; }
+    .brand-mark { width: 9px; height: 9px; border-radius: 3px; background: #ffffff; }
+    h1 { margin: 0 0 9px; font-size: 28px; line-height: 1.15; letter-spacing: -0.6px; }
+    .intro { margin: 0 0 30px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .input-group { margin-bottom: 18px; }
+    label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 650; color: #d4d4d8; }
+    input { width: 100%; padding: 12px 13px; border-radius: 7px; border: 1px solid var(--border); background: var(--input-bg); color: #ffffff; outline: none; font-size: 14px; }
+    input:focus { border-color: #71717a; outline: 2px solid #3f3f46; outline-offset: 1px; }
+    button.submit-btn { width: 100%; padding: 12px; margin-top: 12px; background: #ffffff; color: #09090b; border: none; border-radius: 7px; font-size: 14px; font-weight: 750; cursor: pointer; }
+    button.submit-btn:hover { background: #e4e4e7; }
+    button.submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    .alert { padding: 11px 13px; border-radius: 7px; margin-bottom: 18px; font-size: 13px; display: none; line-height: 1.5; }
+    .alert-error { background: #3b1d22; border: 1px solid #7f1d2d; color: #fecdd3; }
+    .alert-success { background: #193329; border: 1px solid #166534; color: #bbf7d0; }
+    .back-btn { display: block; background: none; border: none; color: #d4d4d8; cursor: pointer; margin: 18px auto 0; font-size: 13px; }
+    .back-btn:hover { color: #ffffff; text-decoration: underline; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h3>Forgot Password</h3>
+    <div class="brand"><span class="brand-mark"></span><span>Showoff Links</span></div>
+    <h1>Recover your account</h1>
+    <p class="intro">Enter your email and we will send you a six-digit password reset code.</p>
     <div id="alert" class="alert"></div>
     <form onsubmit="handleForgot(event)">
       <div class="input-group">
-        <label>Account Email</label>
-        <input type="email" id="email" required>
+        <label for="email">Account email</label>
+        <input type="email" id="email" autocomplete="email" required>
       </div>
-      <button type="submit" class="submit-btn">Send Reset Link</button>
+      <button type="submit" id="forgotButton" class="submit-btn">Send reset code</button>
     </form>
-    <button class="back-btn" onclick="window.location.href='/authHub'">Back to Login</button>
+    <button class="back-btn" onclick="window.location.href='./authHub.html'">Back to login</button>
   </div>
 
   <script>
     async function handleForgot(e) {
       e.preventDefault();
       const alertBox = document.getElementById('alert');
+      const forgotButton = document.getElementById('forgotButton');
+      const emailInput = document.getElementById('email');
+      const email = emailInput.value.trim();
+      forgotButton.disabled = true;
+      forgotButton.innerText = 'Sending code...';
+
       try {
-        const res = await fetch('/auth/forgot-password', {
+        const res = await fetch('http://localhost:3000/auth/forgot-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email.value })
+          body: JSON.stringify({ email })
         });
         const data = await res.json();
         if(res.ok) {
           alertBox.className = "alert alert-success";
-          alertBox.innerHTML = `Link generated! Check <a href="${data.preview}" target="_blank" style="color:white;text-decoration:underline">Ethereal Inbox</a> to update your password.`;
+          alertBox.innerHTML = `Code sent! Check your email or <a href="${data.preview}" target="_blank" style="color:white;text-decoration:underline">open the Ethereal inbox</a> to view it.`;
           alertBox.style.display = "block";
         } else {
           alertBox.className = "alert alert-error";
           alertBox.innerText = data.error;
           alertBox.style.display = "block";
         }
-      } catch { alertBox.innerText = "Connection error."; alertBox.style.display = "block"; }
+      } catch {
+        alertBox.className = 'alert alert-error';
+        alertBox.innerText = 'Connection error. Please try again.';
+        alertBox.style.display = 'block';
+      } finally {
+        forgotButton.disabled = false;
+        forgotButton.innerText = 'Send reset code';
+      }
     }
   </script>
 </body>

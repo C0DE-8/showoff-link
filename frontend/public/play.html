@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Truth or Dare - Live Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #07080c;
+      --accent-purple: #9333ea;
+      --accent-glow: rgba(147, 51, 234, 0.25);
+      --text: #f8fafc;
+      --text-muted: #64748b;
+      --input-bg: rgba(255, 255, 255, 0.03);
+      --border-line: rgba(255, 255, 255, 0.08);
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: clamp(16px, 4vw, 48px) clamp(16px, 5vw, 24px);
+    }
+
+    header, main {
+      width: 100%;
+      max-width: 840px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-line);
+    }
+
+    .status-badge {
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: var(--input-bg);
+      border: 1px solid var(--border-line);
+    }
+
+    .status-badge.active { border-color: var(--success); color: var(--success); }
+    .status-badge.waiting { border-color: #f59e0b; color: #f59e0b; }
+    .status-badge.completed { border-color: var(--danger); color: var(--danger); }
+
+    /* Game Stage Display */
+    .stage-container {
+      background: var(--input-bg);
+      border: 1px solid var(--border-line);
+      border-radius: 20px;
+      padding: 32px;
+      text-align: center;
+      margin-bottom: 32px;
+      position: relative;
+    }
+
+    .timer-ring {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--accent-purple);
+      margin: 16px 0;
+    }
+
+    .task-prompt {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 20px 0;
+      min-height: 60px;
+    }
+
+    /* Action Form */
+    .turn-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-line);
+      border-radius: 12px;
+      color: var(--text);
+      outline: none;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-submit {
+      flex: 2;
+      background: linear-gradient(135deg, var(--accent-purple), #7c3aed);
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-burn {
+      flex: 1;
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Players Section */
+    .players-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .player-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: var(--input-bg);
+      border: 1px solid var(--border-line);
+      border-radius: 14px;
+    }
+
+    .player-row.is-target {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .start-btn {
+      width: 100%;
+      background: var(--success);
+      color: white;
+      border: none;
+      padding: 18px;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1 id="roomTitle">Room Overview</h1>
+      <small id="roundCounter" style="color: var(--text-muted);">Waiting for players...</small>
+    </div>
+    <div id="statusBadge" class="status-badge waiting">Waiting</div>
+  </header>
+
+  <main>
+    <!-- Live Arena -->
+    <div class="stage-container" id="stageContainer">
+      <h2 id="turnIndicator">Game Room</h2>
+      
+      <div id="timerDisplay" class="timer-ring">--:--</div>
+
+      <p class="task-prompt" id="taskPrompt">Host needs to start the game.</p>
+
+      <!-- Active Player Form -->
+      <form id="turnForm" class="turn-controls" style="display: none;">
+        <input type="text" id="mediaUrl" placeholder="Paste proof URL / media response link..." />
+        <div class="btn-group">
+          <button type="submit" class="btn-submit">Submit Answer</button>
+          <button type="button" id="burnBtn" class="btn-burn">Burn / Pass</button>
+        </div>
+      </form>
+
+      <!-- Host Action -->
+      <button id="startGameBtn" class="start-btn" style="display: none;">Start Game Now</button>
+    </div>
+
+    <!-- Leaderboard / Active Players -->
+    <h3 style="margin-bottom: 16px; font-size: 1rem; color: var(--text-muted); text-transform: uppercase;">Players</h3>
+    <div class="players-list" id="playersContainer">
+      <!-- Dynamic list -->
+    </div>
+  </main>
+
+  <script src="./script/play.js"></script>
+</body>
+</html>

@@ -1,30 +1,44 @@
 const express = require('express');
 const multer = require('multer');
 const { protect } = require('./auth');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 
+
+const JWT_PAYLOAD = 'your_super_secure_jwt_secret_key_12345ghibs2567rjfhrfhhw';
 const uploadsDir = path.join(__dirname, '..', 'uploads');
+
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
-// Configure Multer to store files directly in a local folder
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, uploadsDir);
   },
+
   filename: (req, file, cb) => {
-    // Generate a secure, unique filename to avoid naming collisions
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+    const uniqueSuffix =
+      Date.now() + '-' + Math.round(Math.random() * 1E9);
+
+    cb(
+      null,
+      uniqueSuffix + path.extname(file.originalname)
+    );
   }
 });
-const upload = multer({ storage: storage });
+
+const upload = multer({
+  storage: storage
+});
+
 
 // 1. UPLOAD ROUTE
 router.post('/upload-asset', protect(), upload.single('graphicAsset'), async (req, res) => {
-  console.log("=== INCOMING IMAGE UPLOAD PIPELINE ===");
+
   
   const pool = req.app.get('pool');
   const userId = req.user ? req.user.id : null; 
@@ -38,59 +52,68 @@ router.post('/upload-asset', protect(), upload.single('graphicAsset'), async (re
   if (allowedViews < 1) allowedViews = 1;
 
   const recipientTagname = req.body.recipient_tagname;
+  let connection;
+  let transactionStarted = false;
 
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No graphic asset chunks captured.' });
     }
 
-    await pool.query('BEGIN');
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+    transactionStarted = true;
 
     // Handle optional recipient resolution
     let recipientId = null;
     if (recipientTagname && recipientTagname.trim() !== "") {
       const cleanTag = recipientTagname.toLowerCase().trim();
-      const recipientRes = await pool.query('SELECT id FROM users WHERE tagname = $1', [cleanTag]);
+      const [recipientRows] = await connection.query('SELECT id FROM users WHERE tagname = ?', [cleanTag]);
       
-      if (recipientRes.rows.length === 0) {
-        await pool.query('ROLLBACK');
+      if (recipientRows.length === 0) {
+        await connection.rollback();
+        transactionStarted = false;
         fs.unlinkSync(req.file.path);
         return res.status(444).json({ error: `No active profile found matching tagname @${recipientTagname}` });
       }
-      recipientId = recipientRes.rows[0].id;
+      recipientId = recipientRows[0].id;
 
       if (recipientId === userId) {
-        await pool.query('ROLLBACK');
+        await connection.rollback();
+        transactionStarted = false;
         fs.unlinkSync(req.file.path);
         return res.status(400).json({ error: 'You cannot target yourself as the restricted recipient.' });
       }
     }
 
     // Balance verification
-    const userWalletRes = await pool.query('SELECT tokens FROM users WHERE id = $1 FOR UPDATE', [userId]);
-    if (userWalletRes.rows.length === 0) {
-      await pool.query('ROLLBACK');
+    const [userWalletRows] = await connection.query('SELECT tokens FROM users WHERE id = ? FOR UPDATE', [userId]);
+    if (userWalletRows.length === 0) {
+      await connection.rollback();
+      transactionStarted = false;
       fs.unlinkSync(req.file.path);
       return res.status(404).json({ error: 'User wallet record not found.' });
     }
 
-    const currentBalance = userWalletRes.rows[0].tokens;
+    const currentBalance = userWalletRows[0].tokens;
     if (currentBalance < TOKEN_COST) {
-      await pool.query('ROLLBACK');
+      await connection.rollback();
+      transactionStarted = false;
       fs.unlinkSync(req.file.path);
       return res.status(402).json({ error: `Insufficient funds. Balance: ${currentBalance}` });
     }
 
     // Deduct Tokens
-    await pool.query('UPDATE users SET tokens = tokens - $1 WHERE id = $2', [TOKEN_COST, userId]);
+    await connection.query('UPDATE users SET tokens = tokens - ? WHERE id = ?', [TOKEN_COST, userId]);
 
     // Save the LOCAL FILE PATH string instead of raw data blob
     const insertQuery = `
-      INSERT INTO images (image_path, file_name, allowed_views, user_id, recipient_id) 
-      VALUES ($1, $2, $3, $4, $5) 
-      RETURNING id
+      INSERT INTO images (id, image_path, file_name, allowed_views, user_id, recipient_id) 
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
-    const result = await pool.query(insertQuery, [
+    const imageId = crypto.randomUUID();
+    await connection.query(insertQuery, [
+      imageId,
       req.file.path, // relative path (e.g., "uploads/172000000-12345.png")
       req.file.originalname, 
       allowedViews, 
@@ -98,82 +121,90 @@ router.post('/upload-asset', protect(), upload.single('graphicAsset'), async (re
       recipientId
     ]);
 
-    await pool.query('COMMIT');
+    await connection.commit();
+    transactionStarted = false;
 
     // FIX: Point the shared link to the HTML UI view, NOT the raw api data block!
     const shareableUrl =
-`http://localhost:8158/view-asset.html?id=${result.rows[0].id}`;
-    return res.json({ success: true, shareableUrl, id: result.rows[0].id });
+  `file:///C:/Users/hp/Documents/showoff-links/frontend/public/view-asset.html?id=${imageId}`;
+    return res.json({ success: true, shareableUrl, id: imageId });
 
   } catch (err) {
-    await pool.query('ROLLBACK');
+    if (connection && transactionStarted) {
+      await connection.rollback();
+    }
     if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
     console.error(err); 
     return res.status(500).json({ error: 'Data pipeline processing failure.', details: err.message });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
-// 2. DATA DECRYPTION PIPELINE (Used by frontend viewAsset.js to fetch the image)
-/* =========================================================================
-   SINGLE-VIEW DECRYPTION STREAM ROUTE
-   ========================================================================= */
-/* =========================================================================
-   SINGLE-VIEW DECRYPTION STREAM ROUTE (Complete Block)
-   ========================================================================= */
+
+
 router.get('/view-asset/:id', async (req, res) => {
   const pool = req.app.get('pool');
   const imageId = req.params.id;
 
-  // Setup your base absolute path dynamically from this route location
-  // Adjust the '..' to match your exact directory level if this file is heavily nested
   const uploadsDir = path.join(__dirname, '..', 'uploads');
 
+  // 1. Authenticate user via Header or Query Parameter
   let currentUserId = null;
+  let token = null;
+
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.split(' ')[1];
+  } else if (req.query.token) {
+    token = req.query.token;
+  }
+
+  if (token) {
     try {
-      const token = authHeader.split(' ')[1];
-      // Optional: Add manual jsonwebtoken decoding logic here if validating users
-    } catch (e) {}
+      const JWT_SECRET = JWT_PAYLOAD;
+      const decoded = jwt.verify(token, JWT_SECRET);
+      currentUserId = decoded.id || decoded.userId || decoded.sub;
+    } catch (e) {
+      console.warn("Invalid or expired JWT token provided during asset view.");
+    }
   }
 
   try {
-    const result = await pool.query(
-      'SELECT image_path, file_name, allowed_views, recipient_id FROM images WHERE id = $1', 
+    const [imageRows] = await pool.query(
+      'SELECT image_path, file_name, allowed_views, recipient_id FROM images WHERE id = ?',
       [imageId]
     );
 
-    if (result.rows.length === 0) {
+    if (imageRows.length === 0) {
       return res.status(404).json({ error: 'Asset missing or already self-destructed.' });
     }
 
-    const imageRecord = result.rows[0];
+    const imageRecord = imageRows[0];
 
-    // Identity access control check
-    if (imageRecord.recipient_id !== null && imageRecord.recipient_id !== currentUserId) {
-      return res.status(403).json({ error: 'Access denied. You are not the authorized reader of this asset.' });
+    // 2. Recipient Restriction Check
+    if (imageRecord.recipient_id !== null) {
+      if (!currentUserId || String(imageRecord.recipient_id) !== String(currentUserId)) {
+        return res.status(403).json({ error: 'Access denied. You are not the authorized reader of this asset.' });
+      }
     }
 
-    // FIX: Clean up path string if the DB stored the "uploads/" directory prefix prefixing the filename
-    let cleanFileName = imageRecord.image_path;
-    if (cleanFileName.startsWith('uploads/')) {
-      cleanFileName = cleanFileName.replace('uploads/', '');
-    }
+    // 3. Fix Path Duplication: Extract ONLY the filename from the stored DB string
+    const cleanFileName = path.basename(imageRecord.image_path);
 
-    // Resolve the absolute file location targeting the local disk folder storage system
+    // Resolve exact local path on disk
     const targetFilePath = path.join(uploadsDir, cleanFileName);
 
-    // Structural verification safeguard check
+    // Safeguard check
     if (!fs.existsSync(targetFilePath)) {
       console.error(`File asset missing from disk architecture lookup target: ${targetFilePath}`);
       return res.status(404).json({ error: 'Asset structural data file missing from backend nodes.' });
     }
 
-    // Decrement counter or purge metadata record if final view session initialized
+    // 4. Decrement views or purge asset record
     if (imageRecord.allowed_views <= 1) {
-      await pool.query('DELETE FROM images WHERE id = $1', [imageId]);
+      await pool.query('DELETE FROM images WHERE id = ?', [imageId]);
       
-      // Hook network buffer closure before wiping payload fragments permanently off disk
       res.on('finish', () => {
         try {
           if (fs.existsSync(targetFilePath)) {
@@ -185,10 +216,10 @@ router.get('/view-asset/:id', async (req, res) => {
         }
       });
     } else {
-      await pool.query('UPDATE images SET allowed_views = allowed_views - 1 WHERE id = $1', [imageId]);
+      await pool.query('UPDATE images SET allowed_views = allowed_views - 1 WHERE id = ?', [imageId]);
     }
 
-    // Safely send the file payload downstream
+    // 5. Stream file downstream
     res.setHeader('Content-Type', 'image/jpeg');
     res.setHeader('Content-Disposition', `inline; filename="${imageRecord.file_name}"`);
     return res.sendFile(targetFilePath);
@@ -204,7 +235,7 @@ router.delete('/purge-asset/:id', async (req, res) => {
   const imageId = req.params.id;
 
   try {
-    await pool.query('DELETE FROM images WHERE id = $1', [imageId]);
+    await pool.query('DELETE FROM images WHERE id = ?', [imageId]);
     return res.json({ success: true, message: 'Asset wiped from registration arrays.' });
   } catch (err) {
     console.error(err);

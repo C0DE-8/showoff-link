@@ -17,17 +17,17 @@ router.get('/skins/inventory', protect(), async (req, res) => {
         us.is_equipped
       FROM user_skins us
       INNER JOIN platform_skins s ON s.id = us.skin_id
-      WHERE us.user_id = $1
+      WHERE us.user_id = ?
       ORDER BY us.is_equipped DESC
     `;
 
-    const result = await pool.query(query, [userId]);
+    const [rows] = await pool.query(query, [userId]);
 
-    const formattedInventory = result.rows.map(row => {
+    const formattedInventory = rows.map(row => {
       let imageUri = null;
 
       if (row.image_data) {
-        // Handle node-postgres bytea Buffer or hex string format
+        // Handle mysql2 binary Buffer or string format
         const buffer = Buffer.isBuffer(row.image_data) 
           ? row.image_data 
           : Buffer.from(row.image_data);
@@ -70,10 +70,10 @@ router.get('/skins/all-images', protect(), async (req, res) => {
       ORDER BY token_cost ASC
     `;
 
-    const result = await pool.query(query);
+    const [rows] = await pool.query(query);
 
     // Format binary data into Base64 data URLs
-    const skins = result.rows.map(skin => {
+    const skins = rows.map(skin => {
       let imageBase64 = null;
 
       if (skin.image_data) {
@@ -102,36 +102,45 @@ router.post('/skins/buy/:id', protect(), async (req, res) => {
   const pool = req.app.get('pool');
   const skinId = req.params.id;
   const userId = req.user.id;
+  let connection;
 
   try {
-    await pool.query('BEGIN');
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
 
-    const skinRes = await pool.query('SELECT token_cost FROM platform_skins WHERE id = $1', [skinId]);
-    if (skinRes.rows.length === 0) {
-      await pool.query('ROLLBACK');
+    const [skinRows] = await connection.query('SELECT token_cost FROM platform_skins WHERE id = ?', [skinId]);
+    if (skinRows.length === 0) {
+      await connection.rollback();
+      connection.release();
       return res.status(404).json({ error: 'Target skin does not exist.' });
     }
-    const cost = skinRes.rows[0].token_cost;
+    const cost = skinRows[0].token_cost;
 
-    const ownedCheck = await pool.query('SELECT 1 FROM user_skins WHERE user_id = $1 AND skin_id = $2', [userId, skinId]);
-    if (ownedCheck.rows.length > 0) {
-      await pool.query('ROLLBACK');
+    const [ownedRows] = await connection.query('SELECT 1 FROM user_skins WHERE user_id = ? AND skin_id = ?', [userId, skinId]);
+    if (ownedRows.length > 0) {
+      await connection.rollback();
+      connection.release();
       return res.status(400).json({ error: 'Theme already loaded within asset ecosystem inventory blocks.' });
     }
 
-    const walletRes = await pool.query('SELECT tokens FROM users WHERE id = $1 FOR UPDATE', [userId]);
-    if (walletRes.rows[0].tokens < cost) {
-      await pool.query('ROLLBACK');
+    const [walletRows] = await connection.query('SELECT tokens FROM users WHERE id = ? FOR UPDATE', [userId]);
+    if (walletRows[0].tokens < cost) {
+      await connection.rollback();
+      connection.release();
       return res.status(402).json({ error: `Transaction rejected. Requires ${cost} tokens.` });
     }
 
-    await pool.query('UPDATE users SET tokens = tokens - $1 WHERE id = $2', [cost, userId]);
-    await pool.query('INSERT INTO user_skins (user_id, skin_id) VALUES ($1, $2)', [userId, skinId]);
+    await connection.query('UPDATE users SET tokens = tokens - ? WHERE id = ?', [cost, userId]);
+    await connection.query('INSERT INTO user_skins (user_id, skin_id) VALUES (?, ?)', [userId, skinId]);
 
-    await pool.query('COMMIT');
+    await connection.commit();
+    connection.release();
     return res.json({ success: true, message: 'Purchase processed cleanly.' });
   } catch (err) {
-    await pool.query('ROLLBACK');
+    if (connection) {
+      await connection.rollback().catch(() => {});
+      connection.release();
+    }
     console.error(err);
     return res.status(500).json({ error: 'Store core database failure.' });
   }
@@ -142,38 +151,45 @@ router.post('/skins/equip/:id', protect(), async (req, res) => {
   const pool = req.app.get('pool');
   const skinId = req.params.id;
   const userId = req.user.id;
+  let connection;
 
   try {
-    await pool.query('BEGIN');
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
 
     // 1. Verify the user actually owns the skin they want to equip
-    const ownershipCheck = await pool.query(
-      'SELECT 1 FROM user_skins WHERE user_id = $1 AND skin_id = $2',
+    const [ownershipRows] = await connection.query(
+      'SELECT 1 FROM user_skins WHERE user_id = ? AND skin_id = ?',
       [userId, skinId]
     );
 
-    if (ownershipCheck.rows.length === 0) {
-      await pool.query('ROLLBACK');
+    if (ownershipRows.length === 0) {
+      await connection.rollback();
+      connection.release();
       return res.status(403).json({ error: "You must purchase this skin before equipping it." });
     }
 
     // 2. Un-equip any currently active skins for this user
-    await pool.query(
-      'UPDATE user_skins SET is_equipped = false WHERE user_id = $1',
+    await connection.query(
+      'UPDATE user_skins SET is_equipped = false WHERE user_id = ?',
       [userId]
     );
 
     // 3. Equip the newly selected skin
-    await pool.query(
-      'UPDATE user_skins SET is_equipped = true WHERE user_id = $1 AND skin_id = $2',
+    await connection.query(
+      'UPDATE user_skins SET is_equipped = true WHERE user_id = ? AND skin_id = ?',
       [userId, skinId]
     );
 
-    await pool.query('COMMIT');
+    await connection.commit();
+    connection.release();
     return res.json({ success: true, message: 'Skin equipped successfully as your default theme!' });
 
   } catch (err) {
-    await pool.query('ROLLBACK');
+    if (connection) {
+      await connection.rollback().catch(() => {});
+      connection.release();
+    }
     console.error(err);
     return res.status(500).json({ error: 'Failed to update skin configuration.' });
   }

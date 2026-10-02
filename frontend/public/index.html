@@ -3,36 +3,119 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Showoff Links | Self-Destructing Data Capsules</title>
+  <title>Showoff Links | View once. Anywhere.</title>
   <style>
     :root {
-      --bg-gradient: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e1b4b 100%);
-      --accent-glow: #fb923c;
-      --accent-neon: #38bdf8;
-      --panel-bg: rgba(30, 41, 59, 0.4);
+      --bg: #151519;
+      --accent: #a855f7;
+      --accent-warm: #c084fc;
+      --panel-bg: rgba(35, 35, 40, 0.88);
+      --panel-border: rgba(255, 255, 255, 0.14);
+      --muted: #b7b7bf;
     }
     body {
-      font-family: Comic Sans MS;
-      background: var(--bg-gradient);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(168, 85, 247, 0.12), transparent 28%),
+        linear-gradient(145deg, #151519 0%, #202024 54%, #121216 100%);
       color: #f8fafc;
       margin: 0;
       padding: 0;
       min-height: 100vh;
       overflow-x: hidden;
+      position: relative;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.12;
+      background-image: linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, black, transparent 70%);
     }
     
     /* Navigation / Branding Header Zone */
     .brand-header {
-      padding: 24px 20px 0 20px;
-      text-align: center;
-      font-size: 14px;
-      font-weight: 800;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #cbd5e1;
+      max-width: 820px;
+      margin: 26px auto 0;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #ffffff;
+      position: relative;
+      z-index: 1;
     }
-    .brand-header span {
-      color: var(--accent-glow);
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+      gap: 1px;
+      border: 1px solid rgba(168, 85, 247, 0.55);
+      border-radius: 12px;
+      background: #232329;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+    .brand-letter {
+      color: #ffffff;
+      font: 800 1.35rem/1 Georgia, "Times New Roman", serif;
+      transform: translateX(1px);
+    }
+    .brand-link {
+      width: 14px;
+      height: 8px;
+      position: relative;
+      display: block;
+      transform: rotate(-42deg) translateY(1px);
+    }
+    .brand-link::before,
+    .brand-link::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      width: 9px;
+      height: 6px;
+      border: 2px solid var(--accent-warm);
+      border-radius: 6px;
+    }
+    .brand-link::before { left: 0; }
+    .brand-link::after { right: 0; }
+    .brand-link span {
+      position: absolute;
+      left: 5px;
+      top: 2px;
+      width: 5px;
+      height: 4px;
+      background: #232329;
+    }
+    .brand-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-align: left;
+    }
+    .brand-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+    .brand-caption {
+      color: #9999a5;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.17em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+    .brand-name span {
+      color: var(--accent);
     }
 
     /* Hero Layout Section */
@@ -42,13 +125,15 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 40px 20px 40px 20px;
+      padding: 54px 20px 44px;
       box-sizing: border-box;
+      position: relative;
+      z-index: 1;
     }
     .badge {
-      background: rgba(251, 146, 60, 0.1);
-      border: 1px solid rgba(251, 146, 60, 0.3);
-      color: var(--accent-glow);
+      background: rgba(168, 85, 247, 0.1);
+      border: 1px solid var(--panel-border);
+      color: var(--accent);
       padding: 6px 16px;
       border-radius: 99px;
       font-size: 13px;
@@ -56,28 +141,33 @@
       letter-spacing: 1px;
       text-transform: uppercase;
       margin-bottom: 20px;
-      animation: pulse 2s infinite;
+      animation: float-in 0.7s ease both;
     }
     h1 {
-      font-size: 42px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(3rem, 8vw, 5.2rem);
       font-weight: 800;
-      margin: 0 0 15px 0;
-      letter-spacing: -1px;
-      background: linear-gradient(to right, #ffffff, #94a3b8);
+      line-height: 0.98;
+      margin: 0 0 20px;
+      letter-spacing: 0;
+      background: #ffffff;
+      background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      animation: float-in 0.7s 0.1s ease both;
     }
     h1 span {
-      background: linear-gradient(to right, var(--accent-glow), #f97316);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--accent-warm);
+      background: none;
+      -webkit-text-fill-color: var(--accent-warm);
     }
     .tagline {
       font-size: 16px;
-      color: #94a3b8;
-      max-width: 400px;
+      color: #c3c3ca;
+      max-width: 500px;
       line-height: 1.6;
-      margin: 0 0 35px 0;
+      margin: 0 0 35px;
+      animation: float-in 0.7s 0.2s ease both;
     }
 
     /* Action Trigger Button Group */
@@ -87,31 +177,31 @@
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
+      animation: float-in 0.7s 0.3s ease both;
     }
     .cta-btn {
-      background: var(--accent-glow);
-      color: #020617;
+      background: var(--accent);
+      color: #17171b;
       border: none;
       padding: 16px 36px;
-      border-radius: 14px;
+      border-radius: 10px;
       font-size: 16px;
       font-weight: 800;
       cursor: pointer;
       text-decoration: none;
-      box-shadow: 0 0 25px rgba(251, 146, 60, 0.4);
       transition: all 0.2s ease-in-out;
       display: inline-block;
     }
     .cta-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 0 35px rgba(251, 146, 60, 0.6);
+      box-shadow: 0 10px 28px rgba(168, 85, 247, 0.32);
     }
     .cta-btn-secondary {
       background: rgba(255, 255, 255, 0.05);
       color: #f8fafc;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--panel-border);
       padding: 16px 28px;
-      border-radius: 14px;
+      border-radius: 10px;
       font-size: 16px;
       font-weight: 700;
       cursor: pointer;
@@ -124,77 +214,130 @@
 
     /* Feature Grid Container Block (Pinterest-style Card Architecture) */
     .features-container {
-      max-width: 440px;
+      max-width: 820px;
       margin: 0 auto;
       padding: 0 20px 60px 20px;
       display: flex;
       flex-direction: column;
       gap: 20px;
+      position: relative;
+      z-index: 1;
     }
     .feature-card {
+      position: relative;
       background: var(--panel-bg);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 20px;
-      padding: 24px;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 26px 28px;
       display: flex;
       gap: 20px;
       align-items: flex-start;
       box-sizing: border-box;
+      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+      overflow: hidden;
     }
+    .feature-card::after {
+      content: "";
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      right: -46px;
+      top: -48px;
+      border-radius: 50%;
+      background: #2a2a30;
+      opacity: 0.1;
+      transition: transform 0.3s ease;
+    }
+    .feature-card:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.22);
+      transform: translateY(-2px);
+    }
+    .feature-card:hover::after { transform: scale(1.7); }
     .icon-wrapper {
-      width: 48px;
-      height: 48px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      width: 38px;
+      height: 38px;
+      flex: none;
+      display: grid;
+      place-items: center;
+      color: var(--accent-warm);
+      background: rgba(168, 85, 247, 0.12);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      font: 750 0.72rem/1 Arial, sans-serif;
+      letter-spacing: 0.08em;
     }
     .feature-info { flex: 1; }
-    .feature-info h3 { margin: 0 0 6px 0; font-size: 16px; font-weight: 600; color: #f1f5f9; }
-    .feature-info p { margin: 0; font-size: 13px; color: #64748b; line-height: 1.5; }
+    .feature-info h3 { margin: 0 0 8px 0; font-size: 17px; font-weight: 750; color: #ffffff; letter-spacing: 0; }
+    .feature-info p { margin: 0; font-size: 13px; color: #aeb4c8; line-height: 1.6; }
 
     /* Economy Info Strip Module Banner */
     .economy-strip {
-      background: linear-gradient(90deg, rgba(30, 27, 75, 0.4) 0%, rgba(15, 23, 42, 0.4) 100%);
-      border: 1px solid rgba(56, 189, 248, 0.2);
-      border-radius: 16px;
-      padding: 20px;
-      margin-top: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 22px 28px;
+      margin-top: 2px;
       display: flex;
       align-items: center;
       gap: 15px;
     }
-    .economy-text h4 { margin: 0 0 4px 0; font-size: 14px; color: var(--accent-neon); text-transform: uppercase; letter-spacing: 0.5px; }
-    .economy-text p { margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.4; }
+    .economy-text h4 { margin: 0 0 4px 0; font-size: 14px; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; }
+    .economy-text p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
 
-    @keyframes pulse {
-      0% { opacity: 0.8; box-shadow: 0 0 0 0 rgba(251, 146, 60, 0.2); }
-      70% { opacity: 1; box-shadow: 0 0 0 10px rgba(251, 146, 60, 0); }
-      100% { opacity: 0.8; box-shadow: 0 0 0 0 rgba(251, 146, 60, 0); }
+    .site-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 24px 20px 32px;
+      border-top: 1px solid var(--panel-border);
+      color: var(--muted);
+      font-size: 12px;
+      position: relative;
+      z-index: 1;
     }
+    .site-footer nav { display: flex; gap: 18px; }
+    .site-footer a { color: #d4d4d8; text-decoration: none; }
+    .site-footer a:hover { color: #ffffff; }
+
+    @keyframes float-in {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      .feature-card { padding: 22px; }
+      .economy-strip { padding: 20px 22px; }
+      .site-footer { align-items: flex-start; flex-direction: column; }
+    }
+
   </style>
 </head>
 <body>
 
   <!-- Brand Title Header -->
-  <div class="brand-header">
-    Showoff <span>Links</span>
+  <div class="brand-header" aria-label="Showoff Links">
+    <div class="brand-mark" aria-label="S link logo">
+      <span class="brand-letter">S</span>
+      <span class="brand-link" aria-hidden="true"><span></span></span>
+    </div>
+    <div class="brand-copy">
+      <div class="brand-name">Showoff <span>Links</span></div>
+      <div class="brand-caption">Private sharing, made simple</div>
+    </div>
   </div>
 
   <!-- Hero Header Visual Layout Block Elements -->
   <div class="hero">
-    <div class="badge">Stateless Security</div>
-    <h1>Self-Destructing<br><span>Data Capsules</span></h1>
-    <p class="tagline">Record voice notes, encrypt image assets, and safely ship custom text streams that vanish completely after playing once.</p>
+    <div class="badge">Stateless security</div>
+    <h1>View once.<br><span>Anywhere.</span></h1>
+    <p class="tagline">Share a voice note, image, or message with control over who sees it, how many times it can be opened, and when it disappears.</p>
     
     <div class="hero-actions">
       <!-- Direct Get Started Button linking to authHub.html -->
-      <a href="/authHub.html" class="cta-btn">Get Started</a>
+      <a href="./authHub.html" class="cta-btn">Get Started</a>
       
       <!-- Workspace button for returning users -->
       <button class="cta-btn-secondary" onclick="enterApp()">Launch Workspace</button>
@@ -206,50 +349,58 @@
     
     <!-- Feature 1: Voice Capsule -->
     <div class="feature-card">
-      <div class="icon-wrapper">🎙️</div>
+      <div class="icon-wrapper">01</div>
       <div class="feature-info">
-        <h3>WhatsApp-Style Voice Core</h3>
-        <p>Record crisp high-compression voice notes with real-time waveform updates. Automatically cues a hard server delete 5 seconds after full playback.</p>
+        <h3>Choose what they see</h3>
+        <p>Send private text, images, and voice notes through a single shareable link. Restrict access to the person you choose.</p>
       </div>
     </div>
 
     <!-- Feature 2: Text Canvas Wrapper -->
     <div class="feature-card">
-      <div class="icon-wrapper">✍️</div>
+      <div class="icon-wrapper">02</div>
       <div class="feature-info">
-        <h3>Floating Typography Canvas</h3>
-        <p>Compose temporary textual arrays inside a minimalist interface built over premium background theme canvas templates.</p>
+        <h3>Set the limit</h3>
+        <p>Give each link a viewing limit. You decide whether it can be opened once or a few more times before it locks.</p>
       </div>
     </div>
 
     <!-- Feature 3: Image Handling Engine -->
     <div class="feature-card">
-      <div class="icon-wrapper">🖼️</div>
+      <div class="icon-wrapper">03</div>
       <div class="feature-info">
-        <h3>Encrypted Asset Drops</h3>
-        <p>Drag and drop graphic file parameters. Process buffers instantly into temporary storage lines safely locked away behind strict token controls.</p>
+        <h3>Self-destruct by design</h3>
+        <p>Once the viewing limit is reached, the content is removed from the platform. Less history. More control.</p>
       </div>
     </div>
 
-    <!-- Token Ledger Presentation Banner -->
+    <!-- Private sharing promise -->
     <div class="economy-strip">
-      <div style="font-size: 26px;">🪙</div>
+      <div class="icon-wrapper">04</div>
       <div class="economy-text">
-        <h4>Token Ledger Economy</h4>
-        <p>Manage your account wallet balance. Burn tokens to transmit highly secure storage packages or unlock permanent canvas interface skins inside the Shop.</p>
+        <h4>Built for private moments</h4>
+        <p>Keep your shared content temporary, intentional, and in your hands from creation to deletion.</p>
       </div>
     </div>
 
   </div>
+
+  <footer class="site-footer">
+    <span>Showoff Links &copy; 2026</span>
+    <nav aria-label="Legal">
+      <a href="./Terms.html">Terms</a>
+      <a href="./Policy.html">Privacy Policy</a>
+    </nav>
+  </footer>
 
   <script>
     function enterApp() {
       // Intelligently direct user based on cached token presence context
       const token = localStorage.getItem('authToken');
       if (token) {
-        window.location.href = '/dashboard.html';
+        window.location.href = './dashboard.html';
       } else {
-        window.location.href = '/authHub.html';
+        window.location.href = './authHub.html';
       }
     }
   </script>

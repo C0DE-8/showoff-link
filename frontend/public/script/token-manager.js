@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!token) {
     triggerToast('Access denied. Authentication token missing.', 'error');
     setTimeout(() => {
-      window.location.href = '/authHub.html';
+      window.location.href = './authHub.html';
     }, 1200);
     return;
   }
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('ROLE CHECK FAILED:', userRole);
     triggerToast(`Access denied. Role received: ${userRole}`, 'error');
     setTimeout(() => {
-      window.location.href = '/dashboard.html';
+      window.location.href = './dashboard.html';
     }, 1200);
     return;
   }
@@ -74,7 +74,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      const result = await response.json();
+      const responseText = await response.text();
+      let result;
+
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Pending purchases returned a non-JSON response:', response.status, responseText.slice(0, 200));
+        if (response.status === 401) {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('userRole');
+          window.location.href = './authHub.html';
+          return;
+        }
+        triggerToast(`Could not load pending purchases (${response.status}).`, 'error');
+        return;
+      }
+
+      if (response.status === 401) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userRole');
+        window.location.href = './authHub.html';
+        return;
+      }
 
       if (result.success) {
         renderTableData(result.data);
@@ -156,7 +178,29 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ requestId, action })
       });
 
-      const result = await response.json();
+      const responseText = await response.text();
+      let result;
+
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Verify topup returned a non-JSON response:', response.status, responseText.slice(0, 200));
+        if (response.status === 401) {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('userRole');
+          window.location.href = './authHub.html';
+          return;
+        }
+        triggerToast(`Verification failed (${response.status}).`, 'error');
+        return;
+      }
+
+      if (response.status === 401) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userRole');
+        window.location.href = './authHub.html';
+        return;
+      }
 
       if (result.success) {
         triggerToast(result.message || `Request ${action}d successfully.`, 'success');
@@ -223,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.removeItem('userRole');
     triggerToast('Logged out successfully.', 'success');
     setTimeout(() => {
-      window.location.href = '/authHub.html';
+      window.location.href = './authHub.html';
     }, 1000);
   }
 });

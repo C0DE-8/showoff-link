@@ -80,7 +80,7 @@ function renderShopGrid(skins) {
       actionButtonHtml = `<span class="badge-owned">Owned</span>`;
     } else {
       actionButtonHtml = `
-        <button class="btn-buy" onclick="buySkin(${skin.id}, ${skin.token_cost}, this)">
+        <button class="btn-buy" data-skin-id="${escapeHtml(String(skin.id))}" data-token-cost="${Number(skin.token_cost)}">
           Buy
         </button>
       `;
@@ -106,6 +106,13 @@ function renderShopGrid(skins) {
         </div>
       </div>
     `;
+
+    const buyButton = card.querySelector('.btn-buy');
+    if (buyButton) {
+      buyButton.addEventListener('click', () => {
+        buySkin(buyButton.dataset.skinId, Number(buyButton.dataset.tokenCost), buyButton);
+      });
+    }
 
     shopGrid.appendChild(card);
   });
