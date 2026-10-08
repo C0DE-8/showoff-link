@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const receiptViewer = document.getElementById('receiptViewer');
 
   // Base API URL
-  const BASE_URL = 'http://localhost:3000/api/shop';
+  const BASE_URL = API.shop;
 
   // --- Initial Data Load ---
   fetchPendingPurchases();

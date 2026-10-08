@@ -6,7 +6,7 @@ if (!sessionToken && window.location.pathname !== './index.html') {
 }
 
 // API Endpoint Setup
-const API_BASE = 'http://localhost:3000/api/skin';
+const API_BASE = API.skin;
 
 const grid = document.getElementById('inventory-grid');
 const statusMsg = document.getElementById('status-msg');

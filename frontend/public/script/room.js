@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  const API_BASE = 'http://localhost:3000/api/flow';
+  const API_BASE = API.flow;
 
   // --- DOM Elements ---
   const toggleViewBtn = document.getElementById('toggleViewBtn');

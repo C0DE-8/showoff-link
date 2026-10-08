@@ -26,6 +26,7 @@
     .back-btn { display: block; background: none; border: none; color: #d4d4d8; cursor: pointer; margin: 18px auto 0; font-size: 13px; }
     .back-btn:hover { color: #ffffff; text-decoration: underline; }
   </style>
+  <script src="./api/api.js"></script>
 </head>
 <body>
 
@@ -55,7 +56,7 @@
       forgotButton.innerText = 'Sending code...';
 
       try {
-        const res = await fetch('http://localhost:3000/auth/forgot-password', {
+        const res = await fetch(`${API.auth}/forgot-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })

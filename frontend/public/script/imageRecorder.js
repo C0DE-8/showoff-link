@@ -1,5 +1,5 @@
 // Base Configuration Constants
-const ENCRYPTION_API_TARGET = 'http://localhost:3000/api/image'; 
+const ENCRYPTION_API_TARGET = API.image; 
 const sessionToken = localStorage.getItem('authToken');
 
 // Session verification gate (Prevents infinite reload loops if already on index.html)

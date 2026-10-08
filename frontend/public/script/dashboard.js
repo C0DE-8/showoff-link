@@ -1,5 +1,5 @@
 // System Configurations Initialization
-const API_BASE = 'http://localhost:3000/api/user';
+const API_BASE = API.user;
 const authToken = localStorage.getItem('authToken');
 
 // Execution Pipeline Entry Guard Check

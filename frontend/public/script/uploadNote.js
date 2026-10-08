@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setSubmittingState(true);
 
     try {
-      const response = await fetch('http://localhost:3000/api/note/upload-note', {
+      const response = await fetch(`${API.note}/upload-note`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:3000/api/audio';
+const API_BASE = API.audio;
 const token = localStorage.getItem('authToken');
 
 if (!token) {
@@ -218,7 +218,7 @@ function setupThemeEngine() {
   document.documentElement.setAttribute('data-theme', savedTheme);
   
   const btn = document.getElementById('themeBtn');
-  if (btn) {const API_BASE = 'http://localhost:3000/api/audio';
+  if (btn) {const API_BASE = API.audio;
 const token = localStorage.getItem('authToken');
 
 // Redirect if no token is found

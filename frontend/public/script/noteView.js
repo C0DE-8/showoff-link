@@ -65,9 +65,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       if (navigator.sendBeacon) {
-        navigator.sendBeacon(`http://localhost:3000/api/note/register-view/${noteId}`);
+        navigator.sendBeacon(`${API.note}/register-view/${noteId}`);
       } else {
-        await fetch(`http://localhost:3000/api/note/register-view/${noteId}`, { method: 'POST' });
+        await fetch(`${API.note}/register-view/${noteId}`, { method: 'POST' });
       }
     } catch (e) {
       console.error('Failed to register view:', e);
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   try {
-    const response = await fetch(`http://localhost:3000/api/note/read-note/${noteId}`, { headers });
+    const response = await fetch(`${API.note}/read-note/${noteId}`, { headers });
     const data = await response.json();
 
     if (!response.ok) {
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.addEventListener('beforeunload', () => {
       if (!registered) {
         registered = true;
-        navigator.sendBeacon(`http://localhost:3000/api/note/register-view/${noteId}`);
+        navigator.sendBeacon(`${API.note}/register-view/${noteId}`);
       }
     });
 

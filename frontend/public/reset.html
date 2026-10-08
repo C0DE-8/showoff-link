@@ -70,6 +70,7 @@
     .back-btn { display: block; background: none; border: none; color: #d4d4d8; cursor: pointer; margin: 18px auto 0; font-size: 13px; }
     .back-btn:hover { color: #ffffff; text-decoration: underline; }
   </style>
+  <script src="./api/api.js"></script>
 </head>
 <body>
 
@@ -128,7 +129,7 @@
       resetButton.innerText = 'Updating password...';
 
       try {
-        const res = await fetch('http://localhost:3000/auth/reset-password', {
+        const res = await fetch(`${API.auth}/reset-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: resetCode, newPassword: newPasswordInput.value })

@@ -1,5 +1,5 @@
 // Base Configuration Constants
-const ASSET_API_BASE = 'http://localhost:3000/api/image';
+const ASSET_API_BASE = API.image;
 const sessionToken = localStorage.getItem('authToken');
 
 document.addEventListener("DOMContentLoaded", () => {

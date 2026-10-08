@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Fetch Bank Account Details on Load
   async function fetchBankDetails() {
     try {
-      const response = await fetch('http://localhost:3000/api/shop/payment-details', {
+      const response = await fetch(`${API.shop}/payment-details`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
         receiptUrl: base64Receipt
       };
 
-      const submitRes = await fetch('http://localhost:3000/api/shop/submit-request', {
+      const submitRes = await fetch(`${API.shop}/submit-request`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,

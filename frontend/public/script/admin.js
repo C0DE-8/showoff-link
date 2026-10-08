@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:3000/api/admin';
+const API_BASE = API.admin;
 
 document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('authToken');

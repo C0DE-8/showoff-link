@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:3000/api/audio';
+const API_BASE = API.audio;
 const urlParams = new URLSearchParams(window.location.search);
 const viewId = urlParams.get('viewId');
 const token = localStorage.getItem('authToken');
