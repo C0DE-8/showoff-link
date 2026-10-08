@@ -1,10 +1,7 @@
 // Shared API endpoints for every frontend page.
-// When served by the backend, use the current origin. For a separate local
-// frontend dev server, fall back to the backend's localhost port.
+// Shared production API origin.
 (() => {
-  const backendOrigin = window.location.port === '3000'
-    ? window.location.origin
-    : `${window.location.protocol}//${window.location.hostname || 'localhost'}:3000`;
+  const backendOrigin = 'https://api.showoff.c0de8.space';
 
   const apiRoot = `${backendOrigin}/api`;
   window.API = Object.freeze({
