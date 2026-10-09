@@ -373,7 +373,7 @@ console.log(localStorage.getItem("userRole"));
         const data = await res.json();
         
         if (res.ok) {
-          triggerToast(`Account created! Verify your registration details via the active inbox link below.`, 'success');
+          triggerToast('Account created! Check your email inbox for the verification link.', 'success');
           if (data.preview) {
             setTimeout(() => {
               triggerToast(`Inbox: <a href="${data.preview}" target="_blank" style="color:white;text-decoration:underline;font-weight:bold;">View Ethereal Mailbox</a>`, 'success');

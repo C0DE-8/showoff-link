@@ -64,7 +64,12 @@
         const data = await res.json();
         if(res.ok) {
           alertBox.className = "alert alert-success";
-          alertBox.innerHTML = `Code sent! Check your email or <a href="${data.preview}" target="_blank" style="color:white;text-decoration:underline">open the Ethereal inbox</a> to view it.`;
+          alertBox.innerText = data.preview
+            ? 'Reset code sent. Check your email inbox.'
+            : 'Reset code sent. Check your email inbox for the code and reset link.';
+          if (data.preview) {
+            alertBox.innerHTML += ` <a href="${data.preview}" target="_blank" rel="noopener noreferrer" style="color:white;text-decoration:underline">Open development email preview</a>.`;
+          }
           alertBox.style.display = "block";
         } else {
           alertBox.className = "alert alert-error";

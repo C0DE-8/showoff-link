@@ -6,9 +6,27 @@ const nodemailer = require('nodemailer');
 
 const router = express.Router();
 const JWT_SECRET = 'your_super_secure_jwt_secret_key_12345ghibs2567rjfhrfhhw';
+const PUBLIC_API_URL = (process.env.PUBLIC_API_URL || 'https://api.showoff.c0de8.space').replace(/\/$/, '');
+const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://showoff.c0de8.space').replace(/\/$/, '');
+const MAIL_FROM = process.env.SMTP_FROM || '"Showoff Links" <no-reply@showoff.c0de8.space>';
 
-// Helper function to create an on-the-fly test email transporter (No real credentials needed for development)
+// Use configured SMTP for live email; keep Ethereal as a development fallback.
 async function getMailTransporter() {
+  if (process.env.SMTP_HOST) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT || 587),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: process.env.SMTP_USER && process.env.SMTP_PASS
+        ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+        : undefined
+    });
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('SMTP_HOST and SMTP_FROM must be configured to send live account emails.');
+  }
+
   const testAccount = await nodemailer.createTestAccount(); // Creates a fake free SMTP sandbox on Ethereal
   return nodemailer.createTransport({
     host: "smtp.ethereal.email",
@@ -95,10 +113,10 @@ router.post('/register', async (req, res) => {
     );
 
     const transporter = await getMailTransporter();
-    const verificationUrl = `http://localhost:3000/auth/verify-email?token=${verificationToken}`;
+    const verificationUrl = `${PUBLIC_API_URL}/auth/verify-email?token=${encodeURIComponent(verificationToken)}`;
 
     const info = await transporter.sendMail({
-      from: '"App Security" <security@example.com>',
+      from: MAIL_FROM,
       to: email,
       subject: "Verify Your Account Registration",
       html: `<p>Thank you for registering. Please click the link below to verify your email:</p>
@@ -195,10 +213,10 @@ router.post('/forgot-password', async (req, res) => {
     );
 
     const transporter = await getMailTransporter();
-    const resetUrl = `file:///C:/Users/hp/Documents/showoff-links%20-%20Copy/frontend/public/reset.html?code=${resetToken}`;
+    const resetUrl = `${PUBLIC_SITE_URL}/reset.html?code=${encodeURIComponent(resetToken)}`;
 
     const info = await transporter.sendMail({
-      from: '"App Security" <security@example.com>',
+      from: MAIL_FROM,
       to: email,
       subject: "Password Reset Request",
             html: `<p>You requested a password reset.</p>
