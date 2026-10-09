@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 const JWT_SECRET = 'your_super_secure_jwt_secret_key_12345ghibs2567rjfhrfhhw';
+const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://showoff-link.vercel.app').replace(/\/$/, '');
 
 router.post('/upload-voice', protect(), upload.single('audio'), async (req, res) => {
   const pool = req.app.get('pool');
@@ -78,8 +79,7 @@ router.post('/upload-voice', protect(), upload.single('audio'), async (req, res)
     await connection.commit();
     transactionStarted = false;
 
-    // This shareableUrl will now safely output: voiceView.html?viewId=d3b07384-d113-4956-a5cc-484014174000
-    const shareableUrl = `file:///C:/Users/hp/Documents/showoff-links/frontend/public/voiceView.html?viewId=${voiceNoteId}`;
+    const shareableUrl = `${PUBLIC_SITE_URL}/voiceView.html?viewId=${encodeURIComponent(voiceNoteId)}`;
     return res.json({ success: true, shareableUrl });
 
   } catch (err) {

@@ -45,6 +45,17 @@ async function loadUsers() {
       resetButton.textContent = 'Reset password';
       resetButton.addEventListener('click', () => resetUserPassword(user));
       actionCell.appendChild(resetButton);
+
+      if (user.role !== 'admin') {
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'button delete';
+        deleteButton.textContent = 'Delete user';
+        deleteButton.style.marginLeft = '8px';
+        deleteButton.addEventListener('click', () => deleteUser(user));
+        actionCell.appendChild(deleteButton);
+      }
+
       row.appendChild(actionCell);
       body.appendChild(row);
     }
@@ -52,6 +63,26 @@ async function loadUsers() {
     status.textContent = data.users.length ? `${data.users.length} users` : 'No users found.';
   } catch (error) {
     status.textContent = error.message;
+  }
+}
+
+async function deleteUser(user) {
+  const confirmed = window.confirm(
+    `Delete ${user.email} and their uploaded images, notes, voice notes, and skins? This cannot be undone.`
+  );
+  if (!confirmed) return;
+
+  try {
+    const response = await fetch(`${ADMIN_API}/users/${encodeURIComponent(user.id)}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'User deletion failed.');
+    showToast(data.message || 'User deleted.', false);
+    await loadUsers();
+  } catch (error) {
+    showToast(error.message, true);
   }
 }
 

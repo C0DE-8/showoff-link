@@ -47,23 +47,67 @@ router.patch('/users/:userId/password', protect(['admin']), async (req, res) => 
   }
 });
 
+router.delete('/users/:userId', protect(['admin']), async (req, res) => {
+  const targetUserId = req.params.userId;
+  if (targetUserId === req.user.id) {
+    return res.status(400).json({ error: 'You cannot delete your own admin account.' });
+  }
 
-router.post('/admin/upload-skin', protect(), upload.single('skinGraphic'), async (req, res) => {
+  let connection;
+  try {
+    const pool = req.app.get('pool');
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const [users] = await connection.query('SELECT id, role FROM users WHERE id = ? FOR UPDATE', [targetUserId]);
+    if (!users.length) {
+      await connection.rollback();
+      return res.status(404).json({ error: 'User not found.' });
+    }
+    if (users[0].role === 'admin') {
+      await connection.rollback();
+      return res.status(403).json({ error: 'Admin accounts cannot be deleted from user management.' });
+    }
+
+    const [images] = await connection.query('SELECT image_path FROM images WHERE user_id = ?', [targetUserId]);
+    await connection.query('UPDATE images SET recipient_id = NULL WHERE recipient_id = ?', [targetUserId]);
+    await connection.query('UPDATE text_notes SET recipient_id = NULL WHERE recipient_id = ?', [targetUserId]);
+    await connection.query('DELETE FROM images WHERE user_id = ?', [targetUserId]);
+    await connection.query('DELETE FROM text_notes WHERE user_id = ?', [targetUserId]);
+    await connection.query('DELETE FROM users WHERE id = ?', [targetUserId]);
+    await connection.commit();
+
+    const uploadsDir = path.resolve(__dirname, '..', 'uploads');
+    for (const image of images) {
+      const imagePath = path.resolve(image.image_path);
+      if (imagePath.startsWith(`${uploadsDir}${path.sep}`)) {
+        await fs.promises.unlink(imagePath).catch(() => {});
+      }
+    }
+
+    res.json({ message: 'User and their uploaded content were deleted.' });
+  } catch (err) {
+    if (connection) await connection.rollback().catch(() => {});
+    console.error('Admin user deletion failed:', err);
+    res.status(500).json({ error: 'Unable to delete user.' });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
+
+router.post('/admin/upload-skin', protect(['admin']), upload.single('skinGraphic'), async (req, res) => {
   const pool = req.app.get('pool');
-  const userId = req.user.id;
   const { name, token_cost } = req.body;
 
   try {
-    // 1. Verify Administration Privileges
-    const [adminRows] = await pool.query('SELECT role FROM users WHERE id = ?', [userId]);
-    if (adminRows.length === 0 || adminRows[0].role !== 'admin' ) {
-      return res.status(403).json({ error: 'Access denied. Management credentials required.' });
-    }
-
     if (!req.file) return res.status(400).json({ error: 'Missing background graphic binary data payload.' });
     if (!name || name.trim() === "") return res.status(400).json({ error: 'Skin title name field is mandatory.' });
 
-    const cost = parseInt(token_cost, 10) || 0;
+    const cost = Number.parseInt(token_cost, 10);
+    if (!Number.isInteger(cost) || cost < 0) {
+      return res.status(400).json({ error: 'Token cost must be zero or greater.' });
+    }
 
     const query = `
       INSERT INTO platform_skins (id, name, token_cost, image_data, mime_type)

@@ -9,6 +9,7 @@ const fs = require('fs');
 
 
 const JWT_PAYLOAD = 'your_super_secure_jwt_secret_key_12345ghibs2567rjfhrfhhw';
+const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://showoff-link.vercel.app').replace(/\/$/, '');
 const uploadsDir = path.join(__dirname, '..', 'uploads');
 
 if (!fs.existsSync(uploadsDir)) {
@@ -124,9 +125,7 @@ router.post('/upload-asset', protect(), upload.single('graphicAsset'), async (re
     await connection.commit();
     transactionStarted = false;
 
-    // FIX: Point the shared link to the HTML UI view, NOT the raw api data block!
-    const shareableUrl =
-  `file:///C:/Users/hp/Documents/showoff-links/frontend/public/view-asset.html?id=${imageId}`;
+    const shareableUrl = `${PUBLIC_SITE_URL}/view-asset.html?id=${encodeURIComponent(imageId)}`;
     return res.json({ success: true, shareableUrl, id: imageId });
 
   } catch (err) {
