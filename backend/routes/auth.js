@@ -7,7 +7,7 @@ const nodemailer = require('nodemailer');
 const router = express.Router();
 const JWT_SECRET = 'your_super_secure_jwt_secret_key_12345ghibs2567rjfhrfhhw';
 const PUBLIC_API_URL = (process.env.PUBLIC_API_URL || 'https://api.showoff.c0de8.space').replace(/\/$/, '');
-const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://showoff.c0de8.space').replace(/\/$/, '');
+const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://showoff-link.vercel.app').replace(/\/$/, '');
 const MAIL_FROM = process.env.SMTP_FROM || '"Showoff Links" <no-reply@showoff.c0de8.space>';
 
 // Use configured SMTP for live email; keep Ethereal as a development fallback.
