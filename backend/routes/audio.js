@@ -8,6 +8,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 const JWT_SECRET = 'your_super_secure_jwt_secret_key_12345ghibs2567rjfhrfhhw';
 const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://showoff-link.vercel.app').replace(/\/$/, '');
 
+// POST /api/audio/upload-voice — upload a voice note and charge its token cost.
 router.post('/upload-voice', protect(), upload.single('audio'), async (req, res) => {
   const pool = req.app.get('pool');
   const userId = req.user.id; 
@@ -93,6 +94,7 @@ router.post('/upload-voice', protect(), upload.single('audio'), async (req, res)
   }
 });
 
+// GET /api/audio/stream-voice/:id — stream an available voice note.
 router.get('/stream-voice/:id', async (req, res) => {
   const pool = req.app.get('pool');
   const audioId = req.params.id;
@@ -239,6 +241,7 @@ router.get('/stream-voice/:id', async (req, res) => {
 });
 
 // WIPE ENDPOINT AFTER USAGE LIMIT CONSUMPTION
+// POST /api/audio/register-play/:id — record a voice note play and enforce view limits.
 router.post('/register-play/:id', async (req, res) => {
   const pool = req.app.get('pool');
   const audioId = req.params.id;

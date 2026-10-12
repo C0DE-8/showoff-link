@@ -3,6 +3,7 @@ const { protect } = require('./auth'); // Secure using your factory function mid
 const router = express.Router();
 const bcrypt =require("bcrypt")
 
+// GET /api/user/profile — return the signed-in user's profile and token balance.
 router.get('/profile', protect(), async (req, res) => {
   const pool = req.app.get('pool');
   const userId = req.user.id;
@@ -21,6 +22,7 @@ router.get('/profile', protect(), async (req, res) => {
   }
 });
 
+// PUT /api/user/update-tagname — change the signed-in user's public tagname.
 router.put('/update-tagname', protect(), async (req, res) => {
   const pool = req.app.get('pool');
   const userId = req.user.id;
@@ -51,6 +53,7 @@ router.put('/update-tagname', protect(), async (req, res) => {
   }
 });
 
+// POST /api/user/gift-tokens — transfer tokens to another user.
 router.post('/gift-tokens', protect(), async (req, res) => {
   const pool = req.app.get('pool');
   const senderId = req.user.id;

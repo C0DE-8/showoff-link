@@ -80,6 +80,7 @@ const protect = (allowedRoles = []) => {
 };
 
 
+// POST /auth/register — create an account and send email verification.
 router.post('/register', async (req, res) => {
   const { full_name, email, password, tagname } = req.body;
   const pool = req.app.get('pool');
@@ -140,6 +141,7 @@ router.post('/register', async (req, res) => {
 });
 
 // 2. VERIFY EMAIL (Consumes token, activates user)
+// GET /auth/verify-email — verify an account using its email token.
 router.get('/verify-email', async (req, res) => {
   const { token } = req.query;
   const pool = req.app.get('pool');
@@ -164,6 +166,7 @@ router.get('/verify-email', async (req, res) => {
 });
 
 // 3. LOGIN (Rejects unverified profiles)
+// POST /auth/login — authenticate a user and return an access token.
 router.post('/login', async (req, res) => {
   const { identifier, email, password } = req.body;
   const pool = req.app.get('pool');
@@ -194,6 +197,7 @@ router.post('/login', async (req, res) => {
 });
 
 // 4. FORGOT PASSWORD (Generates short-lived reset link)
+// POST /auth/forgot-password — email a short-lived password reset code.
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
   const pool = req.app.get('pool');
@@ -242,6 +246,7 @@ router.post('/forgot-password', async (req, res) => {
 });
 
 // 5. RESET PASSWORD (Updates password, clears active tokens)
+// POST /auth/reset-password — replace the account password with a valid code.
 router.post('/reset-password', async (req, res) => {
   const { token, newPassword } = req.body;
   const pool = req.app.get('pool');

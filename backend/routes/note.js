@@ -7,6 +7,7 @@ const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://showoff-link.ve
 
 const JWT_SECRET = 'your_super_secure_jwt_secret_key_12345ghibs2567rjfhrfhhw';
 
+// POST /api/note/upload-note — create a text note and charge its token cost.
 router.post('/upload-note', protect(), async (req, res) => {
   const pool = req.app.get('pool');
   let connection;
@@ -107,6 +108,7 @@ router.post('/upload-note', protect(), async (req, res) => {
 // Make sure to import jwt at the top of your file if it isn't already:
 // const jwt = require('jsonwebtoken');
 
+// GET /api/note/read-note/:id — retrieve a text note for its recipient.
 router.get('/read-note/:id', async (req, res) => {
   const pool = req.app.get('pool');
   const noteId = req.params.id;
@@ -206,6 +208,7 @@ router.get('/read-note/:id', async (req, res) => {
 });
 
 
+// POST /api/note/register-view/:id — record a note view and enforce view limits.
 router.post('/register-view/:id', async (req, res) => {
   const pool = req.app.get('pool');
   const noteId = req.params.id;

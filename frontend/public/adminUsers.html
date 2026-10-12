@@ -27,9 +27,10 @@
     .verified { color: #86efac; }
     .reset { padding: 7px 10px; font-size: 13px; }
     .delete { padding: 7px 10px; font-size: 13px; color: #fca5a5; border-color: #71343b; background: #351b25; }
-    #toast { position: fixed; right: 20px; bottom: 20px; z-index: 20; max-width: min(420px, calc(100vw - 36px)); padding: 14px 18px; border: 1px solid rgba(255,255,255,.2); border-radius: 14px; background: rgba(22,101,52,.68); color: #f0fdf4; box-shadow: 0 16px 44px rgba(0,0,0,.32); backdrop-filter: blur(18px) saturate(150%); -webkit-backdrop-filter: blur(18px) saturate(150%); opacity: 0; transform: translateY(10px); pointer-events: none; transition: opacity .22s ease, transform .22s ease; }
+    #toast { position: fixed; right: 20px; bottom: 20px; z-index: 20; max-width: min(420px, calc(100vw - 36px)); padding: 14px 18px; border: 1px solid rgba(255,255,255,.22); border-radius: 14px; background: rgba(24,22,36,.72); color: #f5f3ff; box-shadow: 0 16px 44px rgba(0,0,0,.32); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%); opacity: 0; transform: translateY(10px); pointer-events: none; transition: opacity .22s ease, transform .22s ease; }
     #toast.show { display: block; opacity: 1; transform: translateY(0); }
-    #toast.error { background: rgba(153,27,27,.7); color: #fff1f2; }
+    #toast.error { background: rgba(70,25,39,.78); border-color: rgba(251,113,133,.3); color: #fff1f2; }
+    #toast.success { border-color: rgba(192,132,252,.38); }
     .modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 20px; background: rgba(5,4,12,.66); backdrop-filter: blur(8px); }
     .modal-backdrop[hidden] { display: none; }
     .modal { width: min(100%, 430px); padding: 24px; border: 1px solid rgba(216,180,254,.24); border-radius: 18px; background: rgba(22,19,38,.82); box-shadow: 0 24px 80px rgba(0,0,0,.5); backdrop-filter: blur(24px) saturate(150%); }
@@ -80,7 +81,7 @@
       <div id="status" class="panel-top" role="status" aria-live="polite">Loading users…</div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Name</th><th>Email</th><th>Username</th><th>Role</th><th>Verification</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Username</th><th>Role</th><th>Verification</th><th>Joined</th><th>Actions</th></tr></thead>
           <tbody id="usersBody" aria-busy="true"></tbody>
         </table>
       </div>

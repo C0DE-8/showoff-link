@@ -11,6 +11,7 @@ const bcrypt = require('bcryptjs');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+// GET /api/admin/users — list all user accounts.
 router.get('/users', protect(['admin']), async (req, res) => {
   try {
     const pool = req.app.get('pool');
@@ -24,6 +25,7 @@ router.get('/users', protect(['admin']), async (req, res) => {
   }
 });
 
+// PATCH /api/admin/users/:userId/password — reset a user's password.
 router.patch('/users/:userId/password', protect(['admin']), async (req, res) => {
   const { newPassword } = req.body;
   if (typeof newPassword !== 'string' || newPassword.length < 8) {
@@ -47,6 +49,28 @@ router.patch('/users/:userId/password', protect(['admin']), async (req, res) => 
   }
 });
 
+// PATCH /api/admin/users/:userId/verification — update account verification status.
+router.patch('/users/:userId/verification', protect(['admin']), async (req, res) => {
+  const { isVerified } = req.body;
+  if (typeof isVerified !== 'boolean') {
+    return res.status(400).json({ error: 'Verification status must be true or false.' });
+  }
+  if (req.params.userId === req.user.id && !isVerified) {
+    return res.status(400).json({ error: 'You cannot unverify your own admin account.' });
+  }
+
+  try {
+    const pool = req.app.get('pool');
+    const [result] = await pool.query('UPDATE users SET is_verified = ? WHERE id = ?', [isVerified, req.params.userId]);
+    if (!result.affectedRows) return res.status(404).json({ error: 'User not found.' });
+    res.json({ message: isVerified ? 'User verified successfully.' : 'User verification removed.', isVerified });
+  } catch (err) {
+    console.error('Admin user verification update failed:', err);
+    res.status(500).json({ error: 'Unable to update user verification.' });
+  }
+});
+
+// DELETE /api/admin/users/:userId — delete a user and their uploaded content.
 router.delete('/users/:userId', protect(['admin']), async (req, res) => {
   const targetUserId = req.params.userId;
   if (targetUserId === req.user.id) {
@@ -95,7 +119,7 @@ router.delete('/users/:userId', protect(['admin']), async (req, res) => {
   }
 });
 
-
+// POST /api/admin/admin/upload-skin — upload a platform skin.
 router.post('/admin/upload-skin', protect(['admin']), upload.single('skinGraphic'), async (req, res) => {
   const pool = req.app.get('pool');
   const { name, token_cost } = req.body;
@@ -122,4 +146,5 @@ router.post('/admin/upload-skin', protect(['admin']), upload.single('skinGraphic
     return res.status(500).json({ error: 'Administration upload channel crash.' });
   }
 });
+
 module.exports=router

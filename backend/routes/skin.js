@@ -3,6 +3,7 @@ const { protect } = require('./auth');
 const router =express.Router()
 
 //get users skins
+// GET /api/skin/skins/inventory — list skins owned by the signed-in user.
 router.get('/skins/inventory', protect(), async (req, res) => {
   const pool = req.app.get('pool');
   const userId = req.user.id;
@@ -60,6 +61,7 @@ router.get('/skins/inventory', protect(), async (req, res) => {
 
 
 // GET ALL PLATFORM SKINS WITH EMBEDDED BASE64 IMAGES
+// GET /api/skin/skins/all-images — list available platform skins.
 router.get('/skins/all-images', protect(), async (req, res) => {
   const pool = req.app.get('pool');
 
@@ -98,6 +100,7 @@ router.get('/skins/all-images', protect(), async (req, res) => {
 
 
 // PURCHASE TRANSACTION HANDLING
+// POST /api/skin/skins/buy/:id — purchase a skin using account tokens.
 router.post('/skins/buy/:id', protect(), async (req, res) => {
   const pool = req.app.get('pool');
   const skinId = req.params.id;
@@ -147,6 +150,7 @@ router.post('/skins/buy/:id', protect(), async (req, res) => {
 });
 
 //equip skin
+// POST /api/skin/skins/equip/:id — equip an owned skin on the user profile.
 router.post('/skins/equip/:id', protect(), async (req, res) => {
   const pool = req.app.get('pool');
   const skinId = req.params.id;

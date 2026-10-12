@@ -55,7 +55,8 @@ async function loadUsers() {
     <tr class="skeleton-row" aria-hidden="true">
       <td><span class="skeleton"></span></td><td><span class="skeleton"></span></td>
       <td><span class="skeleton short"></span></td><td><span class="skeleton short"></span></td>
-      <td><span class="skeleton short"></span></td><td><span class="skeleton action"></span></td>
+      <td><span class="skeleton short"></span></td><td><span class="skeleton short"></span></td>
+      <td><span class="skeleton action"></span></td>
     </tr>`).join('');
 
   try {
@@ -80,12 +81,24 @@ async function loadUsers() {
       if (user.is_verified) verificationCell.className = 'verified';
       row.appendChild(verificationCell);
 
+      const joinedCell = document.createElement('td');
+      joinedCell.textContent = user.created_at ? new Date(user.created_at).toLocaleDateString() : '—';
+      row.appendChild(joinedCell);
+
       const actionCell = document.createElement('td');
+      const verificationButton = document.createElement('button');
+      verificationButton.type = 'button';
+      verificationButton.className = `button ${user.is_verified ? 'delete' : 'primary'}`;
+      verificationButton.textContent = user.is_verified ? 'Unverify' : 'Verify';
+      verificationButton.addEventListener('click', () => setUserVerification(user, !user.is_verified));
+      actionCell.appendChild(verificationButton);
+
       const resetButton = document.createElement('button');
       resetButton.type = 'button';
       resetButton.className = 'button reset';
       resetButton.textContent = 'Reset password';
       resetButton.addEventListener('click', () => resetUserPassword(user));
+      resetButton.style.marginLeft = '8px';
       actionCell.appendChild(resetButton);
 
       if (user.role !== 'admin') {
@@ -107,6 +120,25 @@ async function loadUsers() {
     status.textContent = error.message;
   } finally {
     body.setAttribute('aria-busy', 'false');
+  }
+}
+
+async function setUserVerification(user, isVerified) {
+  try {
+    const response = await fetch(`${ADMIN_API}/users/${encodeURIComponent(user.id)}/verification`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('authToken')}`
+      },
+      body: JSON.stringify({ isVerified })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Unable to update verification.');
+    showToast(data.message, false);
+    await loadUsers();
+  } catch (error) {
+    showToast(error.message, true);
   }
 }
 
@@ -180,6 +212,7 @@ function showToast(message, isError) {
   const toast = document.getElementById('toast');
   toast.textContent = message;
   toast.classList.toggle('error', isError);
+  toast.classList.toggle('success', !isError);
   toast.classList.add('show');
   window.clearTimeout(showToast.timeout);
   showToast.timeout = window.setTimeout(() => toast.classList.remove('show'), 4500);

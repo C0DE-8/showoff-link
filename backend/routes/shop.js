@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('./auth');
 
+// GET /api/shop/payment-details — return the configured payment account details.
 router.get('/payment-details', async (req, res) => {
   const pool = req.app.get('pool');
 
@@ -24,6 +25,7 @@ router.get('/payment-details', async (req, res) => {
 // ==========================================
 // 2. USER SUBMIT TOP-UP REQUEST (Protected User Route)
 // ==========================================
+// POST /api/shop/submit-request — submit a token top-up request.
 router.post('/submit-request', protect(), async (req, res) => {
   const pool = req.app.get('pool');
   
@@ -72,6 +74,7 @@ router.post('/submit-request', protect(), async (req, res) => {
 // ==========================================
 // 3. ADMIN VERIFY / APPROVE TOP-UP (Admin Only)
 // ==========================================
+// POST /api/shop/verify-topup — approve or reject a top-up as an admin.
 router.post('/verify-topup', protect(['admin']), async (req, res) => {
   const pool = req.app.get('pool');
   const { requestId, action } = req.body; // action: 'approve' | 'reject'
@@ -142,6 +145,7 @@ router.post('/verify-topup', protect(['admin']), async (req, res) => {
 // ==========================================
 // 4. ADMIN UPDATE BANK ACCOUNT INFO (Admin Only)
 // ==========================================
+// PUT /api/shop/admin/update-account — update the payment account as an admin.
 router.put('/admin/update-account', protect(['admin']), async (req, res) => {
   const pool = req.app.get('pool');
   const { bankName, accountNumber, accountName } = req.body;
@@ -180,6 +184,7 @@ router.put('/admin/update-account', protect(['admin']), async (req, res) => {
 // ==========================================
 // 5. ADMIN GET ALL PENDING PURCHASES (Admin Only)
 // ==========================================
+// GET /api/shop/admin/pending-purchases — list pending top-up requests for admins.
 router.get('/admin/pending-purchases', protect(['admin']), async (req, res) => {
   const pool = req.app.get('pool');
 

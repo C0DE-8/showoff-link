@@ -38,6 +38,7 @@ const upload = multer({
 
 
 // 1. UPLOAD ROUTE
+// POST /api/image/upload-asset — upload an image asset and charge its token cost.
 router.post('/upload-asset', protect(), upload.single('graphicAsset'), async (req, res) => {
 
   
@@ -142,6 +143,7 @@ router.post('/upload-asset', protect(), upload.single('graphicAsset'), async (re
 
 
 
+// GET /api/image/view-asset/:id — retrieve an image asset for its recipient.
 router.get('/view-asset/:id', async (req, res) => {
   const pool = req.app.get('pool');
   const imageId = req.params.id;
@@ -229,6 +231,7 @@ router.get('/view-asset/:id', async (req, res) => {
   }
 });
 
+// DELETE /api/image/purge-asset/:id — permanently remove an expired image asset.
 router.delete('/purge-asset/:id', async (req, res) => {
   const pool = req.app.get('pool');
   const imageId = req.params.id;
