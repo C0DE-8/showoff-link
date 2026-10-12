@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!token) {
       showError('Authentication token missing. Please log in to publish.');
-       window.location.href = '/login.html';
+       window.location.href = './authHub.html';
       return;
     }
 

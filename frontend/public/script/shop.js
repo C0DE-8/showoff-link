@@ -1,7 +1,7 @@
 const sessionToken = localStorage.getItem('authToken');
 
 if (!sessionToken) {
-  window.location.href = '/index.html';
+  window.location.href = './index.html';
 }
 
 const API_BASE = API.skin;
@@ -26,7 +26,7 @@ async function loadShopAndImages() {
 
     if (skinsRes.status === 401 || skinsRes.status === 403) {
       localStorage.removeItem('authToken');
-      window.location.href = '/index.html';
+      window.location.href = './index.html';
       return;
     }
 
