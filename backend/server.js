@@ -25,7 +25,8 @@ app.use(cors({
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.static(path.join(__dirname, 'public')));
+const publicDirectory = path.join(__dirname, '..', 'frontend', 'public');
+app.use(express.static(publicDirectory));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ limit: '20mb', extended: true }))
 
@@ -39,6 +40,13 @@ app.use("/api/note", noteRouter);
 app.use("/api/shop", shopRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/skin", skinRouter);
+
+app.use((req, res) => {
+  if (req.accepts('html')) {
+    return res.status(404).sendFile(path.join(publicDirectory, '404.html'));
+  }
+  res.status(404).json({ error: 'Not found.' });
+});
 
 // Core Listener Interface
 app.listen(PORT, () => {

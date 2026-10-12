@@ -82,8 +82,7 @@
       gap: 12px;
     }
 
-    .menu-toggle { display: none; }
-    .header-actions.open { display: flex; }
+    .menu-toggle { display: none !important; }
 
     .btn {
       background: var(--card-bg);
@@ -325,7 +324,6 @@
   </div>
 
   <script defer src="./script/background-audio.js"></script>
-</body>
 <script>
   const adminMenuToggle = document.getElementById('adminMenuToggle');
   const adminHeaderActions = document.getElementById('adminHeaderActions');
@@ -356,4 +354,5 @@
     }
   });
 </script>
+</body>
 </html>

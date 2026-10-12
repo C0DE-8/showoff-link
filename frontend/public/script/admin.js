@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
         setTimeout(() => {
-            window.location.href = '/dashboard.html';
+            window.location.href = './dashboard.html';
         }, 1200);
 
         return;
@@ -44,11 +44,7 @@ function handleLogout() {
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userRole');
 
-    triggerToast('Signed out successfully.', 'success');
-
-    setTimeout(() => {
-        window.location.href = '/authHub.html';
-    }, 1000);
+    window.location.replace('./authHub.html');
 }
 
 
