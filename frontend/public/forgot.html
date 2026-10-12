@@ -8,7 +8,7 @@
     :root { --bg: #1a1a1f; --card-bg: #242429; --text: #ffffff; --muted: #a1a1aa; --border: #3f3f46; --input-bg: #1d1d22; }
     * { box-sizing: border-box; }
     body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 24px; }
-    .card { background: var(--card-bg); padding: 36px; border-radius: 14px; width: 100%; max-width: 430px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.32); }
+    .card { background: rgba(36,36,41,.72); padding: 36px; border-radius: 14px; width: 100%; max-width: 430px; border: 1px solid rgba(255,255,255,.14); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.32); backdrop-filter: blur(22px) saturate(145%); -webkit-backdrop-filter: blur(22px) saturate(145%); }
     .brand { display: inline-flex; align-items: center; gap: 9px; margin-bottom: 24px; font-size: 14px; font-weight: 750; }
     .brand-mark { width: 9px; height: 9px; border-radius: 3px; background: #ffffff; }
     h1 { margin: 0 0 9px; font-size: 28px; line-height: 1.15; letter-spacing: -0.6px; }
@@ -20,9 +20,9 @@
     button.submit-btn { width: 100%; padding: 12px; margin-top: 12px; background: #ffffff; color: #09090b; border: none; border-radius: 7px; font-size: 14px; font-weight: 750; cursor: pointer; }
     button.submit-btn:hover { background: #e4e4e7; }
     button.submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-    .alert { padding: 11px 13px; border-radius: 7px; margin-bottom: 18px; font-size: 13px; display: none; line-height: 1.5; }
-    .alert-error { background: #3b1d22; border: 1px solid #7f1d2d; color: #fecdd3; }
-    .alert-success { background: #193329; border: 1px solid #166534; color: #bbf7d0; }
+    .alert { padding: 12px 14px; border-radius: 11px; margin-bottom: 18px; font-size: 13px; display: none; line-height: 1.5; backdrop-filter: blur(16px); }
+    .alert-error { background: rgba(127,29,45,.38); border: 1px solid rgba(251,113,133,.38); color: #fecdd3; }
+    .alert-success { background: rgba(22,101,52,.35); border: 1px solid rgba(74,222,128,.34); color: #bbf7d0; }
     .back-btn { display: block; background: none; border: none; color: #d4d4d8; cursor: pointer; margin: 18px auto 0; font-size: 13px; }
     .back-btn:hover { color: #ffffff; text-decoration: underline; }
   </style>
@@ -56,12 +56,12 @@
       forgotButton.innerText = 'Sending code...';
 
       try {
-        const res = await fetch(`${API.auth}/forgot-password`, {
+        const res = await API.request('/auth/forgot-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })
         });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         if(res.ok) {
           alertBox.className = "alert alert-success";
           alertBox.innerText = data.preview
@@ -73,12 +73,13 @@
           alertBox.style.display = "block";
         } else {
           alertBox.className = "alert alert-error";
-          alertBox.innerText = data.error;
+          alertBox.innerText = data.error || 'Unable to send the reset code. Please try again.';
           alertBox.style.display = "block";
         }
-      } catch {
+      } catch (error) {
+        console.error('Forgot password request failed:', error);
         alertBox.className = 'alert alert-error';
-        alertBox.innerText = 'Connection error. Please try again.';
+        alertBox.innerText = `Could not reach the password service at ${API.baseUrl}. Check the API deployment and try again.`;
         alertBox.style.display = 'block';
       } finally {
         forgotButton.disabled = false;

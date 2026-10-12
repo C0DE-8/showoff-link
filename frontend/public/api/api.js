@@ -1,7 +1,12 @@
 // Shared API endpoints for every frontend page.
 // Shared production API origin.
 (() => {
-  const backendOrigin = 'https://api.showoff.c0de8.space';
+  // Allow deployments to override the API host without rebuilding the pages.
+  // Same-origin hosting can set API_BASE_URL to an empty string and proxy /api.
+  const configuredOrigin = document.querySelector('meta[name="api-base-url"]')?.content
+    || window.API_BASE_URL
+    || 'https://api.showoff.c0de8.space';
+  const backendOrigin = configuredOrigin.replace(/\/$/, '');
 
   const apiRoot = `${backendOrigin}/api`;
   window.API = Object.freeze({

@@ -199,6 +199,9 @@ router.post('/forgot-password', async (req, res) => {
   const pool = req.app.get('pool');
 
   try {
+    if (typeof email !== 'string' || !email.trim()) {
+      return res.status(400).json({ error: 'A valid email address is required.' });
+    }
     const [userRows] = await pool.query('SELECT id FROM users WHERE email = ?', [email.toLowerCase().trim()]);
     if (userRows.length === 0) {
       return res.status(404).json({ error: 'No account associated with that email.' });
@@ -243,7 +246,9 @@ router.post('/reset-password', async (req, res) => {
   const { token, newPassword } = req.body;
   const pool = req.app.get('pool');
 
-  if (!token || !newPassword) return res.status(400).json({ error: 'Token and new password required.' });
+  if (!token || typeof newPassword !== 'string') return res.status(400).json({ error: 'Token and new password required.' });
+  if (!/^\d{6}$/.test(String(token))) return res.status(400).json({ error: 'Enter the six-digit reset code from your email.' });
+  if (newPassword.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters.' });
 
   try {
     // Locate profile matching token where expiration threshold has not passed

@@ -82,6 +82,9 @@
       gap: 12px;
     }
 
+    .menu-toggle { display: none; }
+    .header-actions.open { display: flex; }
+
     .btn {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -237,8 +240,12 @@
     .toast.show { opacity: 1; transform: translateY(0); }
 
     @media (max-width: 640px) {
-      .admin-header { flex-direction: column; align-items: flex-start; gap: 16px; }
-      .header-actions { width: 100%; justify-content: space-between; }
+      .admin-header { flex-direction: row; align-items: center; gap: 12px; }
+      .brand-title { font-size: 17px; }
+      .menu-toggle { display: inline-flex; width: 42px; height: 42px; justify-content: center; padding: 0; font-size: 19px; }
+      .header-actions { display: none; position: absolute; top: 78px; right: 18px; z-index: 5; width: min(230px, calc(100vw - 36px)); padding: 8px; flex-direction: column; background: rgba(22,17,38,.97); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,.42); }
+      .header-actions.open { display: flex; }
+      .header-actions .btn { justify-content: flex-start; }
     }
   </style>
 
@@ -258,10 +265,14 @@
         <span class="brand-badge">Root</span>
         <span class="brand-title">Operations Hub</span>
       </div>
-      <div class="header-actions">
+      <button class="btn menu-toggle" id="adminMenuToggle" type="button" aria-expanded="false" aria-controls="adminHeaderActions" aria-label="Open navigation">☰</button>
+      <nav class="header-actions" id="adminHeaderActions" aria-label="Admin navigation">
         <a href="./admin-dashboard.html" class="btn">Admin Workspace</a>
+        <a href="./adminUsers.html" class="btn">User accounts</a>
+        <a href="./adminSkin.html" class="btn">Skin manager</a>
+        <a href="./token-manger.html" class="btn">Token manager</a>
         <button class="btn btn-danger" id="logoutBtn">Sign Out</button>
-      </div>
+      </nav>
     </header>
 
     <!-- Navigation Hub Cards -->
@@ -314,4 +325,34 @@
   </div>
 
 </body>
+<script>
+  const adminMenuToggle = document.getElementById('adminMenuToggle');
+  const adminHeaderActions = document.getElementById('adminHeaderActions');
+  adminMenuToggle.addEventListener('click', () => {
+    const isOpen = adminHeaderActions.classList.toggle('open');
+    adminMenuToggle.setAttribute('aria-expanded', String(isOpen));
+    adminMenuToggle.setAttribute('aria-label', isOpen ? 'Close navigation' : 'Open navigation');
+  });
+  adminHeaderActions.addEventListener('click', (event) => {
+    if (event.target.closest('a')) {
+      adminHeaderActions.classList.remove('open');
+      adminMenuToggle.setAttribute('aria-expanded', 'false');
+      adminMenuToggle.setAttribute('aria-label', 'Open navigation');
+    }
+  });
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.admin-header')) {
+      adminHeaderActions.classList.remove('open');
+      adminMenuToggle.setAttribute('aria-expanded', 'false');
+      adminMenuToggle.setAttribute('aria-label', 'Open navigation');
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      adminHeaderActions.classList.remove('open');
+      adminMenuToggle.setAttribute('aria-expanded', 'false');
+      adminMenuToggle.setAttribute('aria-label', 'Open navigation');
+    }
+  });
+</script>
 </html>

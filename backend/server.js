@@ -22,7 +22,7 @@ const PORT = Number(process.env.PORT || 3000);
 // Middleware Setup
 app.use(cors({
   origin: '*',
-  methods: ['GET', 'POST', 'DELETE', 'PUT'],
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.static(path.join(__dirname, 'public')));

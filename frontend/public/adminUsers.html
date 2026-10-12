@@ -27,9 +27,37 @@
     .verified { color: #86efac; }
     .reset { padding: 7px 10px; font-size: 13px; }
     .delete { padding: 7px 10px; font-size: 13px; color: #fca5a5; border-color: #71343b; background: #351b25; }
-    #toast { position: fixed; right: 18px; bottom: 18px; max-width: min(420px, calc(100vw - 36px)); padding: 12px 16px; border-radius: 9px; background: #166534; display: none; }
-    #toast.error { background: #991b1b; }
-    @media(max-width: 600px) { body { padding: 18px 10px 42px; } header { align-items: flex-start; flex-direction: column; } th, td { padding: 12px 10px; } }
+    #toast { position: fixed; right: 20px; bottom: 20px; z-index: 20; max-width: min(420px, calc(100vw - 36px)); padding: 14px 18px; border: 1px solid rgba(255,255,255,.2); border-radius: 14px; background: rgba(22,101,52,.68); color: #f0fdf4; box-shadow: 0 16px 44px rgba(0,0,0,.32); backdrop-filter: blur(18px) saturate(150%); -webkit-backdrop-filter: blur(18px) saturate(150%); opacity: 0; transform: translateY(10px); pointer-events: none; transition: opacity .22s ease, transform .22s ease; }
+    #toast.show { display: block; opacity: 1; transform: translateY(0); }
+    #toast.error { background: rgba(153,27,27,.7); color: #fff1f2; }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 20px; background: rgba(5,4,12,.66); backdrop-filter: blur(8px); }
+    .modal-backdrop[hidden] { display: none; }
+    .modal { width: min(100%, 430px); padding: 24px; border: 1px solid rgba(216,180,254,.24); border-radius: 18px; background: rgba(22,19,38,.82); box-shadow: 0 24px 80px rgba(0,0,0,.5); backdrop-filter: blur(24px) saturate(150%); }
+    .modal h2 { margin: 0 0 8px; font-size: 21px; }
+    .modal p { margin: 0 0 20px; font-size: 14px; }
+    .modal label { display: block; margin: 14px 0 7px; color: #e9d5ff; font-size: 13px; }
+    .modal input { width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 9px; background: rgba(13,11,24,.8); color: var(--text); font: inherit; }
+    .modal input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+    .button:disabled { opacity: .6; cursor: wait; }
+    .admin-nav { display: flex; align-items: center; gap: 10px; }
+    .menu-toggle { display: none; width: 42px; height: 42px; padding: 0; font-size: 20px; }
+    .skeleton-row td { padding-top: 17px; padding-bottom: 17px; }
+    .skeleton { display: block; height: 13px; width: min(100%, 150px); border-radius: 99px; background: linear-gradient(90deg, rgba(167,139,250,.08), rgba(216,180,254,.24), rgba(167,139,250,.08)); background-size: 220% 100%; animation: shimmer 1.25s ease-in-out infinite; }
+    .skeleton.short { width: 72px; }
+    .skeleton.action { width: 112px; height: 30px; border-radius: 8px; }
+    @keyframes shimmer { to { background-position: -220% 0; } }
+    @media(max-width: 600px) {
+      body { padding: 18px 10px 42px; }
+      header { align-items: center; flex-direction: row; }
+      .admin-nav { position: relative; }
+      .menu-toggle { display: inline-flex; }
+      .nav-links { display: none; position: absolute; top: calc(100% + 10px); right: 0; z-index: 5; min-width: 190px; padding: 8px; flex-direction: column; align-items: stretch; background: rgba(22,19,38,.96); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,.4); }
+      .nav-links.open { display: flex; }
+      .nav-links .button { justify-content: flex-start; }
+      th, td { padding: 12px 10px; }
+    }
+    @media(prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
   </style>
   <script src="./api/api.js"></script>
   <script defer src="./script/adminUsers.js"></script>
@@ -38,19 +66,42 @@
   <main>
     <header>
       <div><h1>User accounts</h1><p>Review registered accounts and reset a user password.</p></div>
-      <a class="button" href="./admin-dashboard.html">Back to admin hub</a>
+      <nav class="admin-nav" aria-label="Admin navigation">
+        <button class="button menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="adminNavLinks" aria-label="Open navigation">☰</button>
+        <div class="nav-links" id="adminNavLinks">
+          <a class="button" href="./admin-dashboard.html">Admin hub</a>
+          <a class="button" href="./adminSkin.html">Skins</a>
+          <a class="button" href="./token-manger.html">Token manager</a>
+        </div>
+      </nav>
     </header>
     <section class="panel" aria-label="Registered users">
       <div class="panel-top"><strong>Registered users</strong><button class="button" id="refreshBtn" type="button">Refresh</button></div>
-      <div id="status" class="panel-top" role="status">Loading users…</div>
+      <div id="status" class="panel-top" role="status" aria-live="polite">Loading users…</div>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Name</th><th>Email</th><th>Username</th><th>Role</th><th>Verification</th><th>Actions</th></tr></thead>
-          <tbody id="usersBody"></tbody>
+          <tbody id="usersBody" aria-busy="true"></tbody>
         </table>
       </div>
     </section>
   </main>
   <div id="toast" role="status" aria-live="polite"></div>
+  <div id="passwordModal" class="modal-backdrop" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="passwordModalTitle">
+      <h2 id="passwordModalTitle">Reset account password</h2>
+      <p id="passwordModalDescription"></p>
+      <form id="passwordForm">
+        <label for="newPassword">New password</label>
+        <input id="newPassword" type="password" minlength="8" autocomplete="new-password" required>
+        <label for="confirmPassword">Confirm new password</label>
+        <input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required>
+        <div class="modal-actions">
+          <button class="button" id="cancelPasswordReset" type="button">Cancel</button>
+          <button class="button primary" id="savePasswordReset" type="submit">Update password</button>
+        </div>
+      </form>
+    </section>
+  </div>
 </body>
 </html>
