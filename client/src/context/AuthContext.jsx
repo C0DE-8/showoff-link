@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { authApi, userApi } from '../api/client'
+import * as authApi from '../api/auth'
+import { getProfile } from '../api/user'
 
 const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
@@ -7,7 +8,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const refresh = async () => {
     if (!localStorage.getItem('showoff_token')) { setUser(null); setLoading(false); return }
-    try { const { data } = await userApi.profile(); setUser(data.profile) }
+    try { const { data } = await getProfile(); setUser(data.profile) }
     catch { localStorage.removeItem('showoff_token'); setUser(null) }
     finally { setLoading(false) }
   }
@@ -15,14 +16,14 @@ export function AuthProvider({ children }) {
     const clear = () => { localStorage.removeItem('showoff_token'); setUser(null); setLoading(false) }
     window.addEventListener('showoff:unauthorized', clear)
     if (localStorage.getItem('showoff_token')) {
-      userApi.profile().then(({ data }) => setUser(data.profile)).catch(() => { localStorage.removeItem('showoff_token'); setUser(null) }).finally(() => setLoading(false))
+      getProfile().then(({ data }) => setUser(data.profile)).catch(() => { localStorage.removeItem('showoff_token'); setUser(null) }).finally(() => setLoading(false))
     } else Promise.resolve().then(() => setLoading(false))
     return () => window.removeEventListener('showoff:unauthorized', clear)
   }, [])
   const login = async (identifier, password) => {
     const { data } = await authApi.login({ identifier, password })
     localStorage.setItem('showoff_token', data.token)
-    const profile = await userApi.profile()
+    const profile = await getProfile()
     setUser(profile.data.profile)
     return data.user
   }
