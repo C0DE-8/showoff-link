@@ -28,7 +28,7 @@ export default function ContentView({ type }) {
             setContent({})
           }
         } else if (!cancelled) {
-          setContent({ audio: audioApi.streamVoiceUrl(id) })
+          setContent({ audioId: id })
         }
       } catch (loadError) {
         if (!cancelled) setError(loadError.response?.data?.error || 'This link may have expired or is only available to its recipient.')
@@ -64,7 +64,7 @@ export default function ContentView({ type }) {
           {type === 'image' && <img className="shared-image" src={imageUrl} alt="A shared photo" />}
           {type === 'voice' && <>
             <p className="voice-player-prompt">A little hello, shared just with you.</p>
-            <AudioPlayer className="voice-player" src={content.audio} label="A voice hello" />
+            <AudioPlayer className="voice-player" loadSource={() => audioApi.fetchVoice(content.audioId)} label="A voice hello" />
           </>}
           <div className="view-signoff">Sent with a little care · Showoff Links</div>
         </>}

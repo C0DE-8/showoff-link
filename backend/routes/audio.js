@@ -17,7 +17,7 @@ function detectAudioMime(buffer) {
   if (buffer.toString('ascii', 0, 3) === 'ID3' || (buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0)) return 'audio/mpeg';
   return 'application/octet-stream';
 }
-
+ 
 // POST /api/audio/upload-voice — upload a voice note and charge its token cost.
 router.post('/upload-voice', protect(), upload.single('audio'), async (req, res) => {
   const pool = req.app.get('pool');
@@ -178,20 +178,21 @@ router.get('/stream-voice/:id', async (req, res) => {
       }
     }
 
-    // Early Cap Verification
-    if (row.current_plays >= row.allowed_plays) {
-      return res.status(410).json({ error: 'This audio has already self-destructed.' });
-    }
-
     const range = req.headers.range;
     const audioBuffer = row.audio_data;
     const totalSize = audioBuffer.length;
 
     if (!totalSize) return res.status(404).json({ error: 'This voice recording is empty.' });
 
-    // Atomic Play Count Increment (Triggered only on stream initialization, not range seeks)
+    // Count a listen only when playback starts at the beginning. Browsers make
+    // additional byte-range requests for the same listen while buffering/seeking;
+    // those must remain available even when the play limit has just been reached.
     const isInitialRequest = !range || range.startsWith('bytes=0-');
     if (isInitialRequest) {
+      if (row.current_plays >= row.allowed_plays) {
+        return res.status(410).json({ error: 'This audio has already self-destructed.' });
+      }
+
       const [updateResult] = await pool.query(
         `UPDATE voice_notes
          SET current_plays = current_plays + 1

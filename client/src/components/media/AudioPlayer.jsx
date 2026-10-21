@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FiPause, FiPlay, FiVolume2 } from 'react-icons/fi'
 
 function formatTime(value) {
@@ -7,13 +7,18 @@ function formatTime(value) {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
 }
 
-export default function AudioPlayer({ src, label = 'Voice recording', className = '' }) {
+export default function AudioPlayer({ src, loadSource, label = 'Voice recording', className = '' }) {
   const audioRef = useRef(null)
+  const loadedUrlRef = useRef('')
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => () => {
+    if (loadedUrlRef.current) URL.revokeObjectURL(loadedUrlRef.current)
+  }, [])
 
   const togglePlayback = async () => {
     const audio = audioRef.current
@@ -22,10 +27,15 @@ export default function AudioPlayer({ src, label = 'Voice recording', className 
     if (audio.paused) {
       setLoading(true)
       try {
+        if (!audio.currentSrc && !audio.src && loadSource) {
+          const loadedUrl = await loadSource()
+          loadedUrlRef.current = loadedUrl
+          audio.src = loadedUrl
+        }
         await audio.play()
-      } catch {
+      } catch (playError) {
         setLoading(false)
-        setError('This recording could not be played. It may be unavailable or in an unsupported format.')
+        setError(playError.message || 'This recording could not be played. It may be unavailable or in an unsupported format.')
       }
     } else {
       audio.pause()
@@ -53,7 +63,14 @@ export default function AudioPlayer({ src, label = 'Voice recording', className 
         onPlaying={() => { setPlaying(true); setLoading(false) }}
         onPause={() => setPlaying(false)}
         onEnded={() => { setPlaying(false); setCurrentTime(0) }}
-        onError={() => { setPlaying(false); setLoading(false); setError('Audio could not be loaded. Check your connection or try recording again.') }}
+        onError={(event) => {
+          setPlaying(false)
+          setLoading(false)
+          const code = event.currentTarget.error?.code
+          setError(code === 4
+            ? 'This audio format is not supported by your browser.'
+            : 'Audio could not be decoded. Please record and upload it again.')
+        }}
       />
       <button className="audio-play-button" type="button" onClick={togglePlayback} aria-label={playing ? 'Pause voice recording' : 'Play voice recording'} disabled={!src}>
         {playing ? <FiPause /> : <FiPlay />}
