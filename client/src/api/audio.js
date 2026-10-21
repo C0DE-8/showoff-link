@@ -1,6 +1,10 @@
 import http from './http'
 
 export const uploadVoice = (formData) => http.post('/api/audio/upload-voice', formData)
+export const previewVoice = async (id) => {
+  const response = await http.get(`/api/audio/preview/${encodeURIComponent(id)}`, { responseType: 'blob' })
+  return URL.createObjectURL(response.data)
+}
 export const streamVoiceUrl = (id) => {
   const url = new URL(`/api/audio/stream-voice/${encodeURIComponent(id)}`, http.defaults.baseURL)
   const token = localStorage.getItem('showoff_token')

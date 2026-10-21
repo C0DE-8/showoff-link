@@ -22,7 +22,7 @@ export default function AudioPlayer({ src, loadSource, label = 'Voice recording'
 
   const togglePlayback = async () => {
     const audio = audioRef.current
-    if (!audio || !src) return
+    if (!audio || loading || (!src && !loadSource)) return
     setError('')
     if (audio.paused) {
       setLoading(true)
@@ -72,8 +72,8 @@ export default function AudioPlayer({ src, loadSource, label = 'Voice recording'
             : 'Audio could not be decoded. Please record and upload it again.')
         }}
       />
-      <button className="audio-play-button" type="button" onClick={togglePlayback} aria-label={playing ? 'Pause voice recording' : 'Play voice recording'} disabled={!src}>
-        {playing ? <FiPause /> : <FiPlay />}
+      <button className="audio-play-button" type="button" onClick={togglePlayback} aria-label={playing ? 'Pause voice recording' : 'Play voice recording'} disabled={loading || (!src && !loadSource)}>
+        {playing ? <FiPause /> : loading ? <span className="audio-loading-dot" /> : <FiPlay />}
       </button>
       <div className="audio-player-main">
         <div className="audio-player-title">{label}</div>

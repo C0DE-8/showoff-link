@@ -17,6 +17,24 @@ function detectAudioMime(buffer) {
   if (buffer.toString('ascii', 0, 3) === 'ID3' || (buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0)) return 'audio/mpeg';
   return 'application/octet-stream';
 }
+
+// GET /api/audio/preview/:id — owner-only preview that does not use a play.
+router.get('/preview/:id', protect(), async (req, res) => {
+  try {
+    const [rows] = await req.app.get('pool').query(
+      'SELECT audio_data FROM voice_notes WHERE id = ? AND user_id = ?',
+      [req.params.id, req.user.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'This recording is unavailable.' });
+    const audioBuffer = rows[0].audio_data;
+    if (!audioBuffer?.length) return res.status(404).json({ error: 'This recording is empty.' });
+    res.set({ 'Content-Type': detectAudioMime(audioBuffer), 'Content-Length': audioBuffer.length, 'Cache-Control': 'private, no-store' });
+    return res.send(audioBuffer);
+  } catch (error) {
+    console.error('Voice preview failed:', error);
+    return res.status(500).json({ error: 'Could not load this voice preview.' });
+  }
+});
  
 // POST /api/audio/upload-voice — upload a voice note and charge its token cost.
 router.post('/upload-voice', protect(), upload.single('audio'), async (req, res) => {

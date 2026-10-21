@@ -7,6 +7,21 @@ const { getPublicSiteUrl } = require('../site-origin');
 
 const JWT_SECRET = 'your_super_secure_jwt_secret_key_12345ghibs2567rjfhrfhhw';
 
+// GET /api/note/preview/:id — let the owner preview without consuming a view.
+router.get('/preview/:id', protect(), async (req, res) => {
+  try {
+    const [rows] = await req.app.get('pool').query(
+      'SELECT note_content, allowed_views, current_views FROM text_notes WHERE id = ? AND user_id = ?',
+      [req.params.id, req.user.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'This note is unavailable.' });
+    return res.json(rows[0]);
+  } catch (error) {
+    console.error('Note preview failed:', error);
+    return res.status(500).json({ error: 'Could not load this note preview.' });
+  }
+});
+
 // POST /api/note/upload-note — create a text note and charge its token cost.
 router.post('/upload-note', protect(), async (req, res) => {
   const pool = req.app.get('pool');

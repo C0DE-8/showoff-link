@@ -16,6 +16,24 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
+// GET /api/image/preview/:id — owner-only preview without decrementing views.
+router.get('/preview/:id', protect(), async (req, res) => {
+  try {
+    const [rows] = await req.app.get('pool').query(
+      'SELECT image_path, file_name FROM images WHERE id = ? AND user_id = ?',
+      [req.params.id, req.user.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'This image is unavailable.' });
+    const targetFilePath = path.join(uploadsDir, path.basename(rows[0].image_path));
+    if (!fs.existsSync(targetFilePath)) return res.status(404).json({ error: 'The image file is no longer available.' });
+    res.setHeader('Cache-Control', 'private, no-store');
+    return res.sendFile(targetFilePath);
+  } catch (error) {
+    console.error('Image preview failed:', error);
+    return res.status(500).json({ error: 'Could not load this image preview.' });
+  }
+});
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadsDir);
