@@ -46,9 +46,14 @@ export const shopApi = {
 }
 export const contentApi = {
   uploadNote: (data) => api.post('/api/note/upload-note', data),
+  readNote: (id) => api.get(`/api/note/read-note/${encodeURIComponent(id)}`),
   uploadImage: (data) => api.post('/api/image/upload-asset', data),
+  viewImage: (id) => api.get(`/api/image/view-asset/${encodeURIComponent(id)}`, { responseType: 'blob' }),
   uploadVoice: (data) => api.post('/api/audio/upload-voice', data),
+  streamVoiceUrl: (id) => `${api.defaults.baseURL}/api/audio/stream-voice/${encodeURIComponent(id)}`,
   skins: () => api.get('/api/skin/skins/all-images'),
   inventory: () => api.get('/api/skin/skins/inventory'),
+  buySkin: (id) => api.post(`/api/skin/skins/buy/${encodeURIComponent(id)}`),
+  equipSkin: (id) => api.post(`/api/skin/skins/equip/${encodeURIComponent(id)}`),
 }
 export default api

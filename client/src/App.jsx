@@ -8,6 +8,15 @@ import Register from './pages/register/Register'
 import Dashboard from './pages/dashboard/Dashboard'
 import Admin from './pages/admin/Admin'
 import NotFound from './pages/not-found/NotFound'
+import CreateContent from './pages/create-content/CreateContent'
+import Profile from './pages/profile/Profile'
+import GiftTokens from './pages/gift-tokens/GiftTokens'
+import TokenShop from './pages/token-shop/TokenShop'
+import SkinShop from './pages/skin-shop/SkinShop'
+import SkinInventory from './pages/skin-inventory/SkinInventory'
+import ContentView from './pages/content-view/ContentView'
+import StaticPage from './pages/static/StaticPage'
+import RecoverPassword from './pages/recover-password/RecoverPassword'
 import './App.css'
 
 function Protected({ children, admin = false }) {
@@ -24,8 +33,21 @@ function AppRoutes() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<RecoverPassword />} />
+      <Route path="/terms" element={<StaticPage kind="terms" />} />
+      <Route path="/privacy" element={<StaticPage kind="privacy" />} />
+      <Route path="/credits" element={<StaticPage kind="credits" />} />
+      <Route path="/note/:id" element={<ContentView type="note" />} />
+      <Route path="/image/:id" element={<ContentView type="image" />} />
+      <Route path="/voice/:id" element={<ContentView type="voice" />} />
     </Route>
     <Route path="/dashboard" element={<Protected><AppLayout /></Protected>}><Route index element={<Dashboard />} /></Route>
+    <Route path="/create/:type" element={<Protected><AppLayout /></Protected>}><Route index element={<CreateContent />} /></Route>
+    <Route path="/profile" element={<Protected><AppLayout /></Protected>}><Route index element={<Profile />} /></Route>
+    <Route path="/gift-tokens" element={<Protected><AppLayout /></Protected>}><Route index element={<GiftTokens />} /></Route>
+    <Route path="/tokens" element={<Protected><AppLayout /></Protected>}><Route index element={<TokenShop />} /></Route>
+    <Route path="/skins" element={<Protected><AppLayout /></Protected>}><Route index element={<SkinShop />} /></Route>
+    <Route path="/skins/inventory" element={<Protected><AppLayout /></Protected>}><Route index element={<SkinInventory />} /></Route>
     <Route path="/admin" element={<Protected admin><AppLayout admin /></Protected>}><Route index element={<Admin />} /></Route>
     <Route path="*" element={<NotFound />} />
   </Routes>
