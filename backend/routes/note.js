@@ -3,7 +3,7 @@ const { protect } = require('./auth');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const router = express.Router();
-const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://showoff-link.vercel.app').replace(/\/$/, '');
+const { getPublicSiteUrl } = require('../site-origin');
 
 const JWT_SECRET = 'your_super_secure_jwt_secret_key_12345ghibs2567rjfhrfhhw';
 
@@ -92,7 +92,7 @@ router.post('/upload-note', protect(), async (req, res) => {
     connection.release();
 
     // Build unique tracking viewer path reference
-    const shareableUrl = `${PUBLIC_SITE_URL}/noteview.html?viewId=${encodeURIComponent(noteId)}`;
+    const shareableUrl = `${getPublicSiteUrl(req)}/note/${encodeURIComponent(noteId)}`;
 
     return res.json({ success: true, id: noteId, shareableUrl });
 

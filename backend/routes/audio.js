@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 const JWT_SECRET = 'your_super_secure_jwt_secret_key_12345ghibs2567rjfhrfhhw';
-const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://showoff-link.vercel.app').replace(/\/$/, '');
+const { getPublicSiteUrl } = require('../site-origin');
 
 // POST /api/audio/upload-voice — upload a voice note and charge its token cost.
 router.post('/upload-voice', protect(), upload.single('audio'), async (req, res) => {
@@ -80,7 +80,7 @@ router.post('/upload-voice', protect(), upload.single('audio'), async (req, res)
     await connection.commit();
     transactionStarted = false;
 
-    const shareableUrl = `${PUBLIC_SITE_URL}/voiceView.html?viewId=${encodeURIComponent(voiceNoteId)}`;
+    const shareableUrl = `${getPublicSiteUrl(req)}/voice/${encodeURIComponent(voiceNoteId)}`;
     return res.json({ success: true, shareableUrl });
 
   } catch (err) {

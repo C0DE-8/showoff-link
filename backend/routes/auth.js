@@ -3,11 +3,11 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto'); // Native Node utility to build unique random secure tokens
 const nodemailer = require('nodemailer');
+const { getPublicSiteUrl } = require('../site-origin');
 
 const router = express.Router();
 const JWT_SECRET = 'your_super_secure_jwt_secret_key_12345ghibs2567rjfhrfhhw';
 const PUBLIC_API_URL = (process.env.PUBLIC_API_URL || 'https://api.showoff.c0de8.space').replace(/\/$/, '');
-const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://showoff-link.vercel.app').replace(/\/$/, '');
 const MAIL_FROM = process.env.SMTP_FROM || '"Showoff Links" <no-reply@showoff.c0de8.space>';
 
 // Use configured SMTP for live email; keep Ethereal as a development fallback.
@@ -220,7 +220,7 @@ router.post('/forgot-password', async (req, res) => {
     );
 
     const transporter = await getMailTransporter();
-    const resetUrl = `${PUBLIC_SITE_URL}/reset.html?code=${encodeURIComponent(resetToken)}`;
+    const resetUrl = `${getPublicSiteUrl(req)}/forgot-password?code=${encodeURIComponent(resetToken)}`;
 
     const info = await transporter.sendMail({
       from: MAIL_FROM,

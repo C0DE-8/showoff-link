@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const pool = require('./db');
+const { isAllowedClientOrigin } = require('./site-origin');
 
 
 // Route Imports
@@ -21,7 +22,7 @@ const PORT = Number(process.env.PORT || 3000);
 
 // Middleware Setup
 app.use(cors({
-  origin: '*',
+  origin: (origin, callback) => callback(null, !origin || isAllowedClientOrigin(origin)),
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));

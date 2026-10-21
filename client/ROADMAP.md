@@ -21,7 +21,7 @@ This document maps the existing `frontend/public` pages to the React app in `cli
 | `buyToken.html` | `/tokens` | Payment details, supported token packs and receipt submission. |
 | `shop.html` | `/skins` | Browse and purchase platform skins. |
 | `userSkin.html` | `/skins/inventory` | View owned skins and equip one. |
-| `admin-dashboard.html`, `adminUsers.html` | `/admin` | Admin user list, verification, deletion, pending top-ups and skin upload. Password reset is exposed in the API but still needs its own UI action. |
+| `admin-dashboard.html`, `adminUsers.html` | `/admin` | Admin user list, verification, deletion, direct token balance updates, password resets, pending top-ups, payment account settings and skin upload. |
 | `adminSkin.html` | `/admin#settings` | Skin upload form is in the admin workspace. |
 | `token-manger.html` | `/admin#topups` and `/admin#settings` | Top-up approvals are implemented. Updating bank details remains to be added to the admin UI. |
 | `Terms.html`, `Policy.html`, `credits.html` | `/terms`, `/privacy`, `/credits` | Basic React informational pages. Legal copy should be reviewed by the service owner before publication. |
@@ -34,14 +34,13 @@ This document maps the existing `frontend/public` pages to the React app in `cli
 ## Backend/API notes
 
 - Axios lives in `src/api/client.js`; set `VITE_API_URL` to the API origin when deploying.
-- The server currently builds share URLs from `PUBLIC_SITE_URL` (default is `https://showoff-link.vercel.app`). Set that backend environment variable to the active client domain so newly created links open the React routes.
+- The server builds share URLs from the requesting frontend Origin when that origin is allowed by `CLIENT_ORIGINS`; `PUBLIC_SITE_URL` is an optional fixed-origin override. The React client uses `/note/:id`, `/image/:id` and `/voice/:id`.
 - Public note, image and audio viewers use React routes; the API checks recipient restrictions and view/plays limits.
 - The payment API accepts receipt URLs. It does not upload receipt files.
 - The admin API provides a password-reset operation, but no existing admin screen clearly exposes it; add that action before calling admin coverage complete.
 
 ## Suggested remaining work
 
-1. Add admin controls for resetting a user's password and changing payment account details.
-2. Add content library/history APIs if users need to manage links they previously created; the current backend has no listing endpoint for a user's content.
-3. Decide whether legacy game rooms and music settings are still product requirements, then define their backend API.
-4. Review legal page copy with the product owner.
+1. Add content library/history APIs if users need to manage links they previously created; the current backend has no listing endpoint for a user's content.
+2. Decide whether legacy game rooms and music settings are still product requirements, then define their backend API.
+3. Review legal page copy with the product owner.

@@ -16,12 +16,30 @@ router.get('/users', protect(['admin']), async (req, res) => {
   try {
     const pool = req.app.get('pool');
     const [users] = await pool.query(
-      'SELECT id, full_name, email, tagname, role, is_verified, created_at FROM users ORDER BY created_at DESC'
+      'SELECT id, full_name, email, tagname, role, tokens, is_verified, created_at FROM users ORDER BY created_at DESC'
     );
     res.json({ users });
   } catch (err) {
     console.error('Admin user listing failed:', err);
     res.status(500).json({ error: 'Unable to load users.' });
+  }
+});
+
+// PATCH /api/admin/users/:userId/tokens — set a user's token balance.
+router.patch('/users/:userId/tokens', protect(['admin']), async (req, res) => {
+  const tokens = Number(req.body.tokens);
+  if (!Number.isSafeInteger(tokens) || tokens < 0) {
+    return res.status(400).json({ error: 'Token balance must be a non-negative whole number.' });
+  }
+
+  try {
+    const pool = req.app.get('pool');
+    const [result] = await pool.query('UPDATE users SET tokens = ? WHERE id = ?', [tokens, req.params.userId]);
+    if (!result.affectedRows) return res.status(404).json({ error: 'User not found.' });
+    return res.json({ success: true, message: 'Token balance updated.', tokens });
+  } catch (err) {
+    console.error('Admin token balance update failed:', err);
+    return res.status(500).json({ error: 'Unable to update token balance.' });
   }
 });
 

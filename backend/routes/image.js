@@ -6,10 +6,10 @@ const crypto = require('crypto');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
+const { getPublicSiteUrl } = require('../site-origin');
 
 
 const JWT_PAYLOAD = 'your_super_secure_jwt_secret_key_12345ghibs2567rjfhrfhhw';
-const PUBLIC_SITE_URL = (process.env.PUBLIC_SITE_URL || 'https://showoff-link.vercel.app').replace(/\/$/, '');
 const uploadsDir = path.join(__dirname, '..', 'uploads');
 
 if (!fs.existsSync(uploadsDir)) {
@@ -126,7 +126,7 @@ router.post('/upload-asset', protect(), upload.single('graphicAsset'), async (re
     await connection.commit();
     transactionStarted = false;
 
-    const shareableUrl = `${PUBLIC_SITE_URL}/view-asset.html?id=${encodeURIComponent(imageId)}`;
+    const shareableUrl = `${getPublicSiteUrl(req)}/image/${encodeURIComponent(imageId)}`;
     return res.json({ success: true, shareableUrl, id: imageId });
 
   } catch (err) {
