@@ -17,6 +17,8 @@ import SkinInventory from './pages/skin-inventory/SkinInventory'
 import ContentView from './pages/content-view/ContentView'
 import StaticPage from './pages/static/StaticPage'
 import RecoverPassword from './pages/recover-password/RecoverPassword'
+import MyLinks from './pages/my-links/MyLinks'
+import { ToastProvider } from './context/ToastContext'
 import './App.css'
 
 function Protected({ children, admin = false }) {
@@ -44,6 +46,7 @@ function AppRoutes() {
     <Route path="/dashboard" element={<Protected><AppLayout /></Protected>}><Route index element={<Dashboard />} /></Route>
     <Route path="/create/:type" element={<Protected><AppLayout /></Protected>}><Route index element={<CreateContent />} /></Route>
     <Route path="/profile" element={<Protected><AppLayout /></Protected>}><Route index element={<Profile />} /></Route>
+    <Route path="/links" element={<Protected><AppLayout /></Protected>}><Route index element={<MyLinks />} /></Route>
     <Route path="/gift-tokens" element={<Protected><AppLayout /></Protected>}><Route index element={<GiftTokens />} /></Route>
     <Route path="/tokens" element={<Protected><AppLayout /></Protected>}><Route index element={<TokenShop />} /></Route>
     <Route path="/skins" element={<Protected><AppLayout /></Protected>}><Route index element={<SkinShop />} /></Route>
@@ -54,5 +57,5 @@ function AppRoutes() {
 }
 
 export default function App() {
-  return <AuthProvider><AppRoutes /></AuthProvider>
+  return <AuthProvider><ToastProvider><AppRoutes /></ToastProvider></AuthProvider>
 }

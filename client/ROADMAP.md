@@ -9,7 +9,7 @@ This document maps the existing `frontend/public` pages to the React app in `cli
 | `index.html` | `/` | Rebuilt landing page. |
 | `authHub.html` | `/login`, `/register` | Login and registration use `/auth/login` and `/auth/register`; verification is required before login. |
 | `forgot.html`, `reset.html` | `/forgot-password` | Request reset code and set a new password using auth API. |
-| `dashboard.html` | `/dashboard` | Profile-backed workspace, creation shortcuts, token balance. |
+| `dashboard.html` | `/dashboard` | Profile-backed workspace, creation shortcuts and token balance. `/links` now provides a separate share history. |
 | `text-handler.html` | `/create/note` | Creates notes through `/api/note/upload-note`. |
 | `image-handler.html`, `test.html` | `/create/image` | Uploads photos through `/api/image/upload-asset`. `test.html` appears to be a duplicate/debug page. |
 | `recorder.html` | `/create/voice` | Browser microphone recording and `/api/audio/upload-voice`. |
@@ -17,6 +17,7 @@ This document maps the existing `frontend/public` pages to the React app in `cli
 | `view-asset.html` | `/image/:id` | Reads view-limited image content through `/api/image/view-asset/:id`. |
 | `voiceView.html` | `/voice/:id` | Plays the stream from `/api/audio/stream-voice/:id`. |
 | `profile.html`, `settings.html` | `/profile` | Profile display and public tag updates. Settings with no backend behavior are intentionally omitted. |
+| Created content history | `/links` | Lists notes, images and voice links with active state and view counts from `/api/user/links`. Images only expose remaining views; the backend deletes them when their limit is consumed. |
 | `giftToken.html` | `/gift-tokens` | Transfers tokens with password confirmation. |
 | `buyToken.html` | `/tokens` | Payment details, supported token packs and receipt submission. |
 | `shop.html` | `/skins` | Browse and purchase platform skins. |
@@ -37,10 +38,10 @@ This document maps the existing `frontend/public` pages to the React app in `cli
 - The server builds share URLs from the requesting frontend Origin when that origin is allowed by `CLIENT_ORIGINS`; `PUBLIC_SITE_URL` is an optional fixed-origin override. The React client uses `/note/:id`, `/image/:id` and `/voice/:id`.
 - Public note, image and audio viewers use React routes; the API checks recipient restrictions and view/plays limits.
 - The payment API accepts receipt URLs. It does not upload receipt files.
+- Image creation previews the selected photo locally before upload. Shared image previews consume an allowed view, so history lists image metadata rather than fetching destructive previews.
 - The admin API provides a password-reset operation, but no existing admin screen clearly exposes it; add that action before calling admin coverage complete.
 
 ## Suggested remaining work
 
-1. Add content library/history APIs if users need to manage links they previously created; the current backend has no listing endpoint for a user's content.
-2. Decide whether legacy game rooms and music settings are still product requirements, then define their backend API.
-3. Review legal page copy with the product owner.
+1. Decide whether legacy game rooms and music settings are still product requirements, then define their backend API.
+2. Review legal page copy with the product owner.

@@ -1,6 +1,7 @@
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
 import { defineConfig, loadEnv } from 'vite'
+import process from 'node:process'
 
 function resolveSiteOrigin(env) {
   const vercelHost = process.env.VERCEL_ENV === 'production'
