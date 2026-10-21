@@ -8,6 +8,16 @@ const upload = multer({ storage: multer.memoryStorage() });
 const JWT_SECRET = 'your_super_secure_jwt_secret_key_12345ghibs2567rjfhrfhhw';
 const { getPublicSiteUrl } = require('../site-origin');
 
+function detectAudioMime(buffer) {
+  if (!Buffer.isBuffer(buffer) || buffer.length < 4) return 'application/octet-stream';
+  if (buffer.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3]))) return 'audio/webm';
+  if (buffer.toString('ascii', 4, 8) === 'ftyp') return 'audio/mp4';
+  if (buffer.toString('ascii', 0, 4) === 'OggS') return 'audio/ogg';
+  if (buffer.toString('ascii', 0, 4) === 'RIFF' && buffer.toString('ascii', 8, 12) === 'WAVE') return 'audio/wav';
+  if (buffer.toString('ascii', 0, 3) === 'ID3' || (buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0)) return 'audio/mpeg';
+  return 'application/octet-stream';
+}
+
 // POST /api/audio/upload-voice — upload a voice note and charge its token cost.
 router.post('/upload-voice', protect(), upload.single('audio'), async (req, res) => {
   const pool = req.app.get('pool');
@@ -154,15 +164,6 @@ router.get('/stream-voice/:id', async (req, res) => {
     // ==========================================
     // DEBUGGING LOGS
     // ==========================================
-    console.log('--- VOICE STREAM DEBUG INFO ---');
-    console.log('Voice Note ID:', audioId);
-    console.log('Intended Recipient ID (DB):', row.recipient_id);
-    console.log('Intended Recipient Tagname (DB):', row.intended_recipient_tagname);
-    console.log('Current Viewer ID (Token):', currentUserId);
-    console.log('Current Viewer Tagname (Token):', currentViewerTagname);
-    console.log('Range Header:', req.headers.range || 'Full Stream (No Range)');
-    console.log('-------------------------------');
-
     // Identity Verification Rule
     if (row.recipient_id !== null) {
       const isAuthorizedById = currentUserId && (row.recipient_id === currentUserId);
@@ -185,6 +186,8 @@ router.get('/stream-voice/:id', async (req, res) => {
     const range = req.headers.range;
     const audioBuffer = row.audio_data;
     const totalSize = audioBuffer.length;
+
+    if (!totalSize) return res.status(404).json({ error: 'This voice recording is empty.' });
 
     // Atomic Play Count Increment (Triggered only on stream initialization, not range seeks)
     const isInitialRequest = !range || range.startsWith('bytes=0-');
@@ -209,22 +212,29 @@ router.get('/stream-voice/:id', async (req, res) => {
     }
 
     const baseHeaders = {
-      'Content-Type': 'audio/webm',
+      'Content-Type': detectAudioMime(audioBuffer),
+      'Accept-Ranges': 'bytes',
       'X-Skin-Image': skinImageHeader,
-      'Access-Control-Expose-Headers': 'X-Skin-Image, Content-Range, Accept-Ranges'
+      'Access-Control-Expose-Headers': 'X-Skin-Image, Content-Range, Accept-Ranges, Content-Length'
     };
 
     if (range) {
-      const parts = range.replace(/bytes=/, "").split("-");
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1;
+      const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+      if (!match || (!match[1] && !match[2])) {
+        return res.status(416).set('Content-Range', `bytes */${totalSize}`).end();
+      }
+      let start = match[1] ? Number(match[1]) : Math.max(0, totalSize - Number(match[2]));
+      let end = match[2] && match[1] ? Number(match[2]) : totalSize - 1;
+      if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start >= totalSize || start > end) {
+        return res.status(416).set('Content-Range', `bytes */${totalSize}`).end();
+      }
+      end = Math.min(end, totalSize - 1);
       const chunk = audioBuffer.subarray(start, end + 1);
 
       res.writeHead(206, {
         ...baseHeaders,
         'Content-Range': `bytes ${start}-${end}/${totalSize}`,
-        'Accept-Ranges': 'bytes',
-        'Content-Length': (end - start) + 1
+        'Content-Length': chunk.length
       });
       res.end(chunk);
     } else {
