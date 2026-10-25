@@ -1,10 +1,10 @@
-const DEFAULT_CLIENT_ORIGINS = 'http://localhost:5173,http://127.0.0.1:5173,https://*.vercel.app';
+const DEFAULT_CLIENT_ORIGINS = 'http://localhost:5173,http://127.0.0.1:5173,https://showoff-link-lu.vercel.app,https://*.vercel.app';
 
 function getClientOrigins() {
-  return (process.env.CLIENT_ORIGINS || DEFAULT_CLIENT_ORIGINS)
+  return [...new Set(`${DEFAULT_CLIENT_ORIGINS},${process.env.CLIENT_ORIGINS || ''}`
     .split(',')
     .map((origin) => origin.trim().replace(/\/$/, ''))
-    .filter(Boolean);
+    .filter(Boolean))];
 }
 
 function isAllowedClientOrigin(origin) {

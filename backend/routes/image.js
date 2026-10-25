@@ -123,13 +123,19 @@ router.post('/upload-asset', protect(), upload.single('graphicAsset'), async (re
       return res.status(402).json({ error: `Insufficient funds. Balance: ${currentBalance}` });
     }
 
+    const [equippedSkinRows] = await connection.query(
+      'SELECT skin_id FROM user_skins WHERE user_id = ? AND is_equipped = true',
+      [userId]
+    );
+    const activeSkinId = equippedSkinRows.length > 0 ? equippedSkinRows[0].skin_id : null;
+
     // Deduct Tokens
     await connection.query('UPDATE users SET tokens = tokens - ? WHERE id = ?', [TOKEN_COST, userId]);
 
     // Save the LOCAL FILE PATH string instead of raw data blob
     const insertQuery = `
-      INSERT INTO images (id, image_path, file_name, allowed_views, user_id, recipient_id) 
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO images (id, image_path, file_name, allowed_views, user_id, recipient_id, skin_id) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
     const imageId = crypto.randomUUID();
     await connection.query(insertQuery, [
@@ -138,7 +144,8 @@ router.post('/upload-asset', protect(), upload.single('graphicAsset'), async (re
       req.file.originalname, 
       allowedViews, 
       userId, 
-      recipientId
+      recipientId,
+      activeSkinId
     ]);
 
     await connection.commit();
@@ -191,7 +198,11 @@ router.get('/view-asset/:id', async (req, res) => {
 
   try {
     const [imageRows] = await pool.query(
-      'SELECT image_path, file_name, allowed_views, recipient_id FROM images WHERE id = ?',
+      `SELECT i.image_path, i.file_name, i.allowed_views, i.recipient_id,
+        ps.image_data AS skin_buffer, ps.mime_type AS skin_mime_type
+       FROM images i
+       LEFT JOIN platform_skins ps ON ps.id = i.skin_id
+       WHERE i.id = ?`,
       [imageId]
     );
 
@@ -236,6 +247,12 @@ router.get('/view-asset/:id', async (req, res) => {
       });
     } else {
       await pool.query('UPDATE images SET allowed_views = allowed_views - 1 WHERE id = ?', [imageId]);
+    }
+
+    if (imageRecord.skin_buffer) {
+      const skinMimeType = imageRecord.skin_mime_type || 'image/jpeg';
+      const skinData = Buffer.from(imageRecord.skin_buffer).toString('base64');
+      res.setHeader('X-Skin-Image', `data:${skinMimeType};base64,${skinData}`);
     }
 
     // 5. Stream file downstream

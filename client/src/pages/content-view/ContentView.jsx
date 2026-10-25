@@ -11,6 +11,7 @@ export default function ContentView({ type }) {
   const [content, setContent] = useState(null)
   const [error, setError] = useState('')
   const [imageUrl, setImageUrl] = useState('')
+  const [skinImage, setSkinImage] = useState('')
 
   useEffect(() => {
     let objectUrl
@@ -19,12 +20,17 @@ export default function ContentView({ type }) {
       try {
         if (type === 'note') {
           const { data } = await noteApi.readNote(id)
-          if (!cancelled) setContent(data)
+          if (!cancelled) {
+            setContent(data)
+            setSkinImage(data.skin_image || '')
+          }
         } else if (type === 'image') {
-          const { data } = await imageApi.viewImage(id)
+          const response = await imageApi.viewImage(id)
+          const { data } = response
           objectUrl = URL.createObjectURL(data)
           if (!cancelled) {
             setImageUrl(objectUrl)
+            setSkinImage(response.headers['x-skin-image'] || '')
             setContent({})
           }
         } else if (!cancelled) {
@@ -42,8 +48,13 @@ export default function ContentView({ type }) {
   }, [id, type])
 
   const icon = type === 'note' ? <FiType /> : type === 'image' ? <FiImage /> : <FiMic />
+  const loadVoice = async () => {
+    const result = await audioApi.fetchVoice(content.audioId)
+    if (result.skinImage) setSkinImage(result.skinImage)
+    return result.url
+  }
   return (
-    <main className="content-view-page">
+    <main className={`content-view-page ${skinImage ? 'has-shared-skin' : ''}`} style={skinImage ? { backgroundImage: `linear-gradient(rgba(17, 16, 25, .68), rgba(17, 16, 25, .78)), url("${skinImage}")` } : undefined}>
       <a className="brand view-brand" href="/" aria-label="Showoff Links home"><span className="brand-mark">s.</span><span>showoff<span className="brand-muted">links</span></span></a>
       <article className={`view-card ${type === 'voice' ? 'voice-view-card' : ''}`}>
         <div className="view-card-icon">{icon}</div>
@@ -64,7 +75,7 @@ export default function ContentView({ type }) {
           {type === 'image' && <img className="shared-image" src={imageUrl} alt="A shared photo" />}
           {type === 'voice' && <>
             <p className="voice-player-prompt">A little hello, shared just with you.</p>
-            <AudioPlayer className="voice-player" loadSource={() => audioApi.fetchVoice(content.audioId)} label="A voice hello" />
+            <AudioPlayer className="voice-player" loadSource={loadVoice} label="A voice hello" />
           </>}
           <div className="view-signoff">Sent with a little care · Showoff Links</div>
         </>}

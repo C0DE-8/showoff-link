@@ -163,7 +163,8 @@ router.get('/stream-voice/:id', async (req, res) => {
         vn.current_plays, 
         vn.recipient_id,
         u.tagname AS intended_recipient_tagname,
-        ps.image_data AS skin_buffer
+        ps.image_data AS skin_buffer,
+        ps.mime_type AS skin_mime_type
       FROM voice_notes vn
       LEFT JOIN user_skins us ON vn.skin_id = us.skin_id
       LEFT JOIN platform_skins ps ON us.skin_id = ps.id
@@ -227,7 +228,7 @@ router.get('/stream-voice/:id', async (req, res) => {
     let skinImageHeader = '';
     if (row.skin_buffer) {
       const base64Data = Buffer.from(row.skin_buffer).toString('base64');
-      skinImageHeader = `data:image/jpeg;base64,${base64Data}`;
+      skinImageHeader = `data:${row.skin_mime_type || 'image/jpeg'};base64,${base64Data}`;
     }
 
     const baseHeaders = {
