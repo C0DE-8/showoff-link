@@ -20,6 +20,7 @@ import RecoverPassword from './pages/recover-password/RecoverPassword'
 import MyLinks from './pages/my-links/MyLinks'
 import { ToastProvider } from './context/ToastContext'
 import './App.css'
+import './theme.css'
 
 function Protected({ children, admin = false }) {
   const { user, loading } = useAuth()
