@@ -51,8 +51,24 @@ export default function ContentView({ type }) {
             if (objectUrl) URL.revokeObjectURL(objectUrl)
             if (skinObjectUrl) URL.revokeObjectURL(skinObjectUrl)
           }
-        } else if (!cancelled) {
-          setContent({ audioId: id })
+        } else {
+          if (!cancelled) setContent({ audioId: id })
+          try {
+            const { data } = await audioApi.getVoiceSkin(id)
+            if (!cancelled && data.skin_id) {
+              const response = await skinApi.getPublicSkin(data.skin_id)
+              const nextSkinUrl = URL.createObjectURL(response.data)
+              if (!cancelled) {
+                skinObjectUrl = nextSkinUrl
+                skinObjectUrlRef.current = nextSkinUrl
+                setSkinImage(nextSkinUrl)
+              } else {
+                URL.revokeObjectURL(nextSkinUrl)
+              }
+            }
+          } catch {
+            // The share page and audio remain available when its optional skin is missing.
+          }
         }
       } catch (loadError) {
         if (!cancelled) setError(loadError.response?.data?.error || 'This link may have expired or is only available to its recipient.')

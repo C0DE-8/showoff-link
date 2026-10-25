@@ -5,6 +5,7 @@ export const previewVoice = async (id) => {
   const response = await http.get(`/api/audio/preview/${encodeURIComponent(id)}`, { responseType: 'blob' })
   return URL.createObjectURL(response.data)
 }
+export const getVoiceSkin = (id) => http.get(`/api/audio/skin/${encodeURIComponent(id)}`)
 export const streamVoiceUrl = (id) => {
   const url = new URL(`/api/audio/stream-voice/${encodeURIComponent(id)}`, http.defaults.baseURL)
   const token = localStorage.getItem('showoff_token')

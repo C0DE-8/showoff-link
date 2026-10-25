@@ -35,6 +35,55 @@ router.get('/preview/:id', protect(), async (req, res) => {
     return res.status(500).json({ error: 'Could not load this voice preview.' });
   }
 });
+
+// GET /api/audio/skin/:id — get a share page's skin without consuming a play.
+router.get('/skin/:id', async (req, res) => {
+  const pool = req.app.get('pool');
+  let currentUserId = null;
+  let currentViewerTagname = null;
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : req.query.token;
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      currentUserId = decoded.id;
+      currentViewerTagname = decoded.tagname;
+      if (!currentViewerTagname && currentUserId) {
+        const [userRows] = await pool.query('SELECT tagname FROM users WHERE id = ?', [currentUserId]);
+        currentViewerTagname = userRows[0]?.tagname || null;
+      }
+    } catch {
+      // An invalid optional token is treated as an anonymous viewer.
+    }
+  }
+
+  try {
+    const [rows] = await pool.query(`
+      SELECT vn.recipient_id, recipient.tagname AS intended_recipient_tagname,
+        COALESCE(
+          vn.skin_id,
+          (SELECT us.skin_id FROM user_skins us WHERE us.user_id = vn.user_id AND us.is_equipped = true LIMIT 1)
+        ) AS skin_id
+      FROM voice_notes vn
+      LEFT JOIN users recipient ON recipient.id = vn.recipient_id
+      WHERE vn.id = ?
+    `, [req.params.id]);
+
+    if (!rows.length) return res.status(404).json({ error: 'This recording is unavailable.' });
+    const row = rows[0];
+    if (row.recipient_id !== null) {
+      const isAuthorized = String(row.recipient_id) === String(currentUserId)
+        || (row.intended_recipient_tagname && currentViewerTagname
+          && row.intended_recipient_tagname.toLowerCase() === currentViewerTagname.toLowerCase());
+      if (!isAuthorized) return res.status(403).json({ error: 'This recording is private to its recipient.' });
+    }
+    return res.json({ skin_id: row.skin_id || null });
+  } catch (error) {
+    console.error('Voice skin lookup failed:', error);
+    return res.status(500).json({ error: 'Could not load the shared background.' });
+  }
+});
  
 // POST /api/audio/upload-voice — upload a voice note and charge its token cost.
 router.post('/upload-voice', protect(), upload.single('audio'), async (req, res) => {
@@ -163,10 +212,11 @@ router.get('/stream-voice/:id', async (req, res) => {
         vn.current_plays, 
         vn.recipient_id,
         u.tagname AS intended_recipient_tagname,
-        vn.skin_id
+        COALESCE(
+          vn.skin_id,
+          (SELECT us.skin_id FROM user_skins us WHERE us.user_id = vn.user_id AND us.is_equipped = true LIMIT 1)
+        ) AS skin_id
       FROM voice_notes vn
-      LEFT JOIN user_skins us ON vn.skin_id = us.skin_id
-      LEFT JOIN platform_skins ps ON us.skin_id = ps.id
       LEFT JOIN users u ON vn.recipient_id = u.id
       WHERE vn.id = ?
     `;

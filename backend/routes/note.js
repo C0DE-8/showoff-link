@@ -165,10 +165,13 @@ router.get('/read-note/:id', async (req, res) => {
         tn.current_views, 
         tn.recipient_id,
         u.tagname AS intended_recipient_tagname,
-        ps.image_data AS skin_buffer
+        ps.image_data AS skin_buffer,
+        ps.mime_type AS skin_mime_type
       FROM text_notes tn
-      LEFT JOIN user_skins us ON tn.skin_id = us.skin_id
-      LEFT JOIN platform_skins ps ON us.skin_id = ps.id
+      LEFT JOIN platform_skins ps ON ps.id = COALESCE(
+        tn.skin_id,
+        (SELECT us.skin_id FROM user_skins us WHERE us.user_id = tn.user_id AND us.is_equipped = true LIMIT 1)
+      )
       LEFT JOIN users u ON tn.recipient_id = u.id
       WHERE tn.id = ?
     `;
@@ -202,7 +205,7 @@ router.get('/read-note/:id', async (req, res) => {
     let skinImage = '';
     if (row.skin_buffer) {
       const base64Data = Buffer.from(row.skin_buffer).toString('base64');
-      skinImage = `data:image/jpeg;base64,${base64Data}`;
+      skinImage = `data:${row.skin_mime_type || 'image/jpeg'};base64,${base64Data}`;
     }
 
     // Atomic increment view count execution

@@ -198,7 +198,11 @@ router.get('/view-asset/:id', async (req, res) => {
 
   try {
     const [imageRows] = await pool.query(
-      `SELECT i.image_path, i.file_name, i.allowed_views, i.recipient_id, i.skin_id
+      `SELECT i.image_path, i.file_name, i.allowed_views, i.recipient_id,
+        COALESCE(
+          i.skin_id,
+          (SELECT us.skin_id FROM user_skins us WHERE us.user_id = i.user_id AND us.is_equipped = true LIMIT 1)
+        ) AS skin_id
        FROM images i
        WHERE i.id = ?`,
       [imageId]
