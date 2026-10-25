@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { FiArrowUpRight, FiClock, FiCopy, FiEye, FiImage, FiMic, FiRefreshCw, FiType, FiX } from 'react-icons/fi'
+import { FiArrowUpRight, FiClock, FiCopy, FiEye, FiImage, FiMic, FiRefreshCw, FiType, FiX, FiStar } from 'react-icons/fi'
 import * as userApi from '../../api/user'
 import * as noteApi from '../../api/note'
 import * as imageApi from '../../api/image'
@@ -66,7 +66,7 @@ export default function MyLinks() {
     <div className="form-page-heading"><span className="create-icon"><FiClock /></span><div><div className="section-kicker">YOUR SHARED MOMENTS</div><h2>My links</h2><p>Keep an eye on what’s still open and how many views are left.</p></div><button className="icon-button links-refresh" onClick={load} aria-label="Refresh links" title="Refresh links"><FiRefreshCw /></button></div>
     <div className="links-summary"><span><strong>{links.length}</strong> total links</span><span><i className="active-dot"/><strong>{activeCount}</strong> still active</span></div>
     <div className="links-filters" role="tablist" aria-label="Filter links">{[['all','All links'],['active','Active'],['ended','Ended']].map(([key,label])=><button role="tab" aria-selected={filter===key} className={filter===key?'filter-chip filter-chip-active':'filter-chip'} onClick={()=>setFilter(key)} key={key}>{label}</button>)}</div>
-    {loading ? <div className="table-loading"><span className="spinner"/> Loading your links…</div> : visibleLinks.length === 0 ? <div className="links-empty"><span className="empty-mark">✳</span><strong>{filter==='all'?'Your first link starts here.':'No links in this view.'}</strong><span>{filter==='all'?'Create a note, photo or voice message and it will appear here.':'Try another filter or create a new moment.'}</span></div> : <div className="link-history-list">{visibleLinks.map((link) => {
+    {loading ? <div className="table-loading"><span className="spinner"/> Loading your links…</div> : visibleLinks.length === 0 ? <div className="links-empty"><span className="empty-mark"><FiStar /></span><strong>{filter==='all'?'Your first link starts here.':'No links in this view.'}</strong><span>{filter==='all'?'Create a note, photo or voice message and it will appear here.':'Try another filter or create a new moment.'}</span></div> : <div className="link-history-list">{visibleLinks.map((link) => {
       const Icon = icons[link.content_type] || FiType
       const hasTotal = link.views_allowed !== null && link.views_allowed !== undefined
       const progress = hasTotal ? Math.min(100, (Number(link.views_used) / Math.max(1, Number(link.views_allowed))) * 100) : null
