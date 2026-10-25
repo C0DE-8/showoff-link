@@ -2,6 +2,27 @@ const express = require('express');
 const { protect } = require('./auth');
 const router =express.Router()
 
+// GET /api/skin/public/:id — serve a skin image used by a shared moment.
+router.get('/public/:id', async (req, res) => {
+  try {
+    const [rows] = await req.app.get('pool').query(
+      'SELECT image_data, mime_type FROM platform_skins WHERE id = ?',
+      [req.params.id]
+    );
+    if (!rows.length || !rows[0].image_data) {
+      return res.status(404).json({ error: 'This skin is unavailable.' });
+    }
+    res.set({
+      'Content-Type': rows[0].mime_type || 'image/jpeg',
+      'Cache-Control': 'public, max-age=3600'
+    });
+    return res.send(rows[0].image_data);
+  } catch (error) {
+    console.error('Public skin image failed:', error);
+    return res.status(500).json({ error: 'Could not load this skin.' });
+  }
+});
+
 //get users skins
 // GET /api/skin/skins/inventory — list skins owned by the signed-in user.
 router.get('/skins/inventory', protect(), async (req, res) => {

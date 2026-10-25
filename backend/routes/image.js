@@ -198,10 +198,8 @@ router.get('/view-asset/:id', async (req, res) => {
 
   try {
     const [imageRows] = await pool.query(
-      `SELECT i.image_path, i.file_name, i.allowed_views, i.recipient_id,
-        ps.image_data AS skin_buffer, ps.mime_type AS skin_mime_type
+      `SELECT i.image_path, i.file_name, i.allowed_views, i.recipient_id, i.skin_id
        FROM images i
-       LEFT JOIN platform_skins ps ON ps.id = i.skin_id
        WHERE i.id = ?`,
       [imageId]
     );
@@ -249,11 +247,7 @@ router.get('/view-asset/:id', async (req, res) => {
       await pool.query('UPDATE images SET allowed_views = allowed_views - 1 WHERE id = ?', [imageId]);
     }
 
-    if (imageRecord.skin_buffer) {
-      const skinMimeType = imageRecord.skin_mime_type || 'image/jpeg';
-      const skinData = Buffer.from(imageRecord.skin_buffer).toString('base64');
-      res.setHeader('X-Skin-Image', `data:${skinMimeType};base64,${skinData}`);
-    }
+    if (imageRecord.skin_id) res.setHeader('X-Skin-Id', imageRecord.skin_id);
 
     // 5. Stream file downstream
     res.setHeader('Content-Type', 'image/jpeg');

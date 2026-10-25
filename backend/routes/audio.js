@@ -163,8 +163,7 @@ router.get('/stream-voice/:id', async (req, res) => {
         vn.current_plays, 
         vn.recipient_id,
         u.tagname AS intended_recipient_tagname,
-        ps.image_data AS skin_buffer,
-        ps.mime_type AS skin_mime_type
+        vn.skin_id
       FROM voice_notes vn
       LEFT JOIN user_skins us ON vn.skin_id = us.skin_id
       LEFT JOIN platform_skins ps ON us.skin_id = ps.id
@@ -224,18 +223,10 @@ router.get('/stream-voice/:id', async (req, res) => {
       }
     }
 
-    // Convert bytea Buffer from platform_skins to base64 Data URL string
-    let skinImageHeader = '';
-    if (row.skin_buffer) {
-      const base64Data = Buffer.from(row.skin_buffer).toString('base64');
-      skinImageHeader = `data:${row.skin_mime_type || 'image/jpeg'};base64,${base64Data}`;
-    }
-
     const baseHeaders = {
       'Content-Type': detectAudioMime(audioBuffer),
       'Accept-Ranges': 'bytes',
-      'X-Skin-Image': skinImageHeader,
-      'Access-Control-Expose-Headers': 'X-Skin-Image, Content-Range, Accept-Ranges, Content-Length'
+      ...(row.skin_id ? { 'X-Skin-Id': row.skin_id } : {})
     };
 
     if (range) {

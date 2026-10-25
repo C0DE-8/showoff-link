@@ -34,7 +34,7 @@ export const fetchVoice = async (id) => {
   if (!response.data.size) throw new Error('The saved recording is empty.')
   return {
     url: URL.createObjectURL(response.data),
-    skinImage: response.headers['x-skin-image'] || ''
+    skinId: response.headers['x-skin-id'] || ''
   }
 }
 export const registerVoicePlay = (id) => http.post(`/api/audio/register-play/${encodeURIComponent(id)}`)

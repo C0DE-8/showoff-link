@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { FiAlertCircle, FiImage, FiMic, FiType } from 'react-icons/fi'
 import * as noteApi from '../../api/note'
 import * as imageApi from '../../api/image'
 import * as audioApi from '../../api/audio'
+import * as skinApi from '../../api/skin'
 import AudioPlayer from '../../components/media/AudioPlayer'
 
 export default function ContentView({ type }) {
@@ -12,9 +13,11 @@ export default function ContentView({ type }) {
   const [error, setError] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [skinImage, setSkinImage] = useState('')
+  const skinObjectUrlRef = useRef('')
 
   useEffect(() => {
     let objectUrl
+    let skinObjectUrl
     let cancelled = false
     const load = async () => {
       try {
@@ -28,10 +31,25 @@ export default function ContentView({ type }) {
           const response = await imageApi.viewImage(id)
           const { data } = response
           objectUrl = URL.createObjectURL(data)
+          const skinId = response.headers['x-skin-id']
+          if (skinId) {
+            try {
+              const skinResponse = await skinApi.getPublicSkin(skinId)
+              skinObjectUrl = URL.createObjectURL(skinResponse.data)
+            } catch {
+              skinObjectUrl = ''
+            }
+          }
           if (!cancelled) {
             setImageUrl(objectUrl)
-            setSkinImage(response.headers['x-skin-image'] || '')
+            if (skinObjectUrl) {
+              skinObjectUrlRef.current = skinObjectUrl
+              setSkinImage(skinObjectUrl)
+            }
             setContent({})
+          } else {
+            if (objectUrl) URL.revokeObjectURL(objectUrl)
+            if (skinObjectUrl) URL.revokeObjectURL(skinObjectUrl)
           }
         } else if (!cancelled) {
           setContent({ audioId: id })
@@ -44,13 +62,25 @@ export default function ContentView({ type }) {
     return () => {
       cancelled = true
       if (objectUrl) URL.revokeObjectURL(objectUrl)
+      if (skinObjectUrl) URL.revokeObjectURL(skinObjectUrl)
+      if (skinObjectUrlRef.current) {
+        URL.revokeObjectURL(skinObjectUrlRef.current)
+        skinObjectUrlRef.current = ''
+      }
     }
   }, [id, type])
 
   const icon = type === 'note' ? <FiType /> : type === 'image' ? <FiImage /> : <FiMic />
   const loadVoice = async () => {
     const result = await audioApi.fetchVoice(content.audioId)
-    if (result.skinImage) setSkinImage(result.skinImage)
+    if (result.skinId) {
+      skinApi.getPublicSkin(result.skinId).then((response) => {
+        const nextSkinUrl = URL.createObjectURL(response.data)
+        if (skinObjectUrlRef.current) URL.revokeObjectURL(skinObjectUrlRef.current)
+        skinObjectUrlRef.current = nextSkinUrl
+        setSkinImage(nextSkinUrl)
+      }).catch(() => {})
+    }
     return result.url
   }
   return (

@@ -25,7 +25,7 @@ app.use(cors({
   origin: (origin, callback) => callback(null, !origin || isAllowedClientOrigin(origin)),
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
-  exposedHeaders: ['X-Skin-Image', 'Content-Range', 'Accept-Ranges', 'Content-Length']
+  exposedHeaders: ['X-Skin-Id', 'Content-Range', 'Accept-Ranges', 'Content-Length']
 }));
 const publicDirectory = path.join(__dirname, '..', 'frontend', 'public');
 app.use(express.static(publicDirectory));
