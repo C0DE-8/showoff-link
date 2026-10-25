@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const pool = require('./db');
 const { isAllowedClientOrigin } = require('./site-origin');
+const cleanupExpiredContent = require('./cleanup-expired');
 
 
 // Route Imports
@@ -53,4 +54,7 @@ app.use((req, res) => {
 // Core Listener Interface
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  cleanupExpiredContent(pool);
+  const cleanupTimer = setInterval(() => cleanupExpiredContent(pool), 5 * 60 * 1000);
+  cleanupTimer.unref();
 });

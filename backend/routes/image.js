@@ -198,7 +198,7 @@ router.get('/view-asset/:id', async (req, res) => {
 
   try {
     const [imageRows] = await pool.query(
-      `SELECT i.image_path, i.file_name, i.allowed_views, i.recipient_id,
+      `SELECT i.image_path, i.file_name, i.allowed_views, i.recipient_id, i.expired_at,
         COALESCE(
           i.skin_id,
           (SELECT us.skin_id FROM user_skins us WHERE us.user_id = i.user_id AND us.is_equipped = true LIMIT 1)
@@ -221,6 +221,10 @@ router.get('/view-asset/:id', async (req, res) => {
       }
     }
 
+    if (imageRecord.expired_at || imageRecord.allowed_views <= 0) {
+      return res.status(410).json({ error: 'This image has reached its view limit.' });
+    }
+
     // 3. Fix Path Duplication: Extract ONLY the filename from the stored DB string
     const cleanFileName = path.basename(imageRecord.image_path);
 
@@ -233,22 +237,16 @@ router.get('/view-asset/:id', async (req, res) => {
       return res.status(404).json({ error: 'Asset structural data file missing from backend nodes.' });
     }
 
-    // 4. Decrement views or purge asset record
-    if (imageRecord.allowed_views <= 1) {
-      await pool.query('DELETE FROM images WHERE id = ?', [imageId]);
-      
-      res.on('finish', () => {
-        try {
-          if (fs.existsSync(targetFilePath)) {
-            fs.unlinkSync(targetFilePath);
-            console.log(`[PURGE SUCCESS] ${cleanFileName} expunged completely from disk.`);
-          }
-        } catch (unlinkErr) {
-          console.error("Delayed filesystem unlinking error:", unlinkErr);
-        }
-      });
-    } else {
-      await pool.query('UPDATE images SET allowed_views = allowed_views - 1 WHERE id = ?', [imageId]);
+    // Reserve this view atomically and timestamp the first moment the limit is reached.
+    const [viewUpdate] = await pool.query(
+      `UPDATE images
+         SET expired_at = IF(allowed_views <= 1, COALESCE(expired_at, CURRENT_TIMESTAMP), expired_at),
+           allowed_views = allowed_views - 1
+       WHERE id = ? AND allowed_views > 0 AND expired_at IS NULL`,
+      [imageId]
+    );
+    if (viewUpdate.affectedRows === 0) {
+      return res.status(410).json({ error: 'This image has reached its view limit.' });
     }
 
     if (imageRecord.skin_id) res.setHeader('X-Skin-Id', imageRecord.skin_id);

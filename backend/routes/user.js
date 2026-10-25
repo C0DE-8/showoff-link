@@ -1,4 +1,6 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const { protect } = require('./auth'); // Secure using your factory function middleware
 const router = express.Router();
 const bcrypt =require("bcrypt")
@@ -39,7 +41,7 @@ router.get('/links', protect(), async (req, res) => {
           GREATEST(tn.allowed_views - tn.current_views, 0) AS views_remaining,
           recipient.tagname AS recipient_tagname,
           tn.created_at,
-          (tn.current_views < tn.allowed_views) AS is_active
+          (tn.current_views < tn.allowed_views AND tn.expired_at IS NULL) AS is_active
         FROM text_notes tn
         LEFT JOIN users recipient ON recipient.id = tn.recipient_id
         WHERE tn.user_id = ?
@@ -55,7 +57,7 @@ router.get('/links', protect(), async (req, res) => {
           i.allowed_views AS views_remaining,
           recipient.tagname AS recipient_tagname,
           i.created_at,
-          (i.allowed_views > 0) AS is_active
+          (i.allowed_views > 0 AND i.expired_at IS NULL) AS is_active
         FROM images i
         LEFT JOIN users recipient ON recipient.id = i.recipient_id
         WHERE i.user_id = ?
@@ -71,7 +73,7 @@ router.get('/links', protect(), async (req, res) => {
           GREATEST(vn.allowed_plays - vn.current_plays, 0) AS views_remaining,
           recipient.tagname AS recipient_tagname,
           vn.created_at,
-          (vn.current_plays < vn.allowed_plays) AS is_active
+          (vn.current_plays < vn.allowed_plays AND vn.expired_at IS NULL) AS is_active
         FROM voice_notes vn
         LEFT JOIN users recipient ON recipient.id = vn.recipient_id
         WHERE vn.user_id = ?
@@ -84,6 +86,52 @@ router.get('/links', protect(), async (req, res) => {
   } catch (err) {
     console.error('User link history failed:', err);
     return res.status(500).json({ error: 'Unable to load your shared links.' });
+  }
+});
+
+// DELETE /api/user/links/:type/:id — owner may remove content after its limit is reached.
+router.delete('/links/:type/:id', protect(), async (req, res) => {
+  const { type, id } = req.params;
+  const userId = req.user.id;
+  const pool = req.app.get('pool');
+  const expiredCondition = '(expired_at IS NOT NULL OR current_views >= allowed_views)';
+
+  try {
+    if (type === 'note') {
+      const [result] = await pool.query(
+        `DELETE FROM text_notes WHERE id = ? AND user_id = ? AND ${expiredCondition}`,
+        [id, userId]
+      );
+      if (!result.affectedRows) return res.status(404).json({ error: 'Expired note not found.' });
+    } else if (type === 'voice') {
+      const [result] = await pool.query(
+        'DELETE FROM voice_notes WHERE id = ? AND user_id = ? AND (expired_at IS NOT NULL OR current_plays >= allowed_plays)',
+        [id, userId]
+      );
+      if (!result.affectedRows) return res.status(404).json({ error: 'Expired voice note not found.' });
+    } else if (type === 'image') {
+      const [rows] = await pool.query(
+        'SELECT image_path FROM images WHERE id = ? AND user_id = ? AND (expired_at IS NOT NULL OR allowed_views <= 0)',
+        [id, userId]
+      );
+      if (!rows.length) return res.status(404).json({ error: 'Expired image not found.' });
+      const [result] = await pool.query(
+        'DELETE FROM images WHERE id = ? AND user_id = ? AND (expired_at IS NOT NULL OR allowed_views <= 0)',
+        [id, userId]
+      );
+      if (!result.affectedRows) return res.status(404).json({ error: 'Expired image not found.' });
+      const imagePath = path.join(__dirname, '..', 'uploads', path.basename(rows[0].image_path));
+      fs.promises.unlink(imagePath).catch((error) => {
+        if (error.code !== 'ENOENT') console.error('Expired image delete failed:', error);
+      });
+    } else {
+      return res.status(400).json({ error: 'Unsupported content type.' });
+    }
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Expired content delete failed:', error);
+    return res.status(500).json({ error: 'Could not delete this expired link.' });
   }
 });
 

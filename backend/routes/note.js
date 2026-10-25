@@ -164,6 +164,7 @@ router.get('/read-note/:id', async (req, res) => {
         tn.allowed_views, 
         tn.current_views, 
         tn.recipient_id,
+        tn.expired_at,
         u.tagname AS intended_recipient_tagname,
         ps.image_data AS skin_buffer,
         ps.mime_type AS skin_mime_type
@@ -197,7 +198,7 @@ router.get('/read-note/:id', async (req, res) => {
       }
     }
 
-    if (row.current_views >= row.allowed_views) {
+    if (row.expired_at || row.current_views >= row.allowed_views) {
       return res.status(410).json({ error: 'This note has already self-destructed.' });
     }
 
@@ -208,8 +209,16 @@ router.get('/read-note/:id', async (req, res) => {
       skinImage = `data:${row.skin_mime_type || 'image/jpeg'};base64,${base64Data}`;
     }
 
-    // Atomic increment view count execution
-    await pool.query('UPDATE text_notes SET current_views = current_views + 1 WHERE id = ?', [noteId]);
+    const [viewUpdate] = await pool.query(
+      `UPDATE text_notes
+         SET expired_at = IF(current_views + 1 >= allowed_views, COALESCE(expired_at, CURRENT_TIMESTAMP), expired_at),
+           current_views = current_views + 1
+       WHERE id = ? AND current_views < allowed_views AND expired_at IS NULL`,
+      [noteId]
+    );
+    if (!viewUpdate.affectedRows) {
+      return res.status(410).json({ error: 'This note has already self-destructed.' });
+    }
 
     // Direct JSON response payload dispatching down text-channel streams
     return res.json({
@@ -236,7 +245,10 @@ router.post('/register-view/:id', async (req, res) => {
     connection = await pool.getConnection();
     await connection.beginTransaction();
     const [updateResult] = await connection.query(
-      'UPDATE text_notes SET current_views = current_views + 1 WHERE id = ?',
+        `UPDATE text_notes
+         SET expired_at = IF(current_views + 1 >= allowed_views, COALESCE(expired_at, CURRENT_TIMESTAMP), expired_at),
+           current_views = current_views + 1
+         WHERE id = ? AND expired_at IS NULL AND current_views < allowed_views`,
       [noteId]
     );
 
@@ -246,10 +258,8 @@ router.post('/register-view/:id', async (req, res) => {
         [noteId]
       );
       const state = stateRows[0];
-      // Hard data elimination layer executes the moment usage thresholds trip
       if (state.current_views >= state.allowed_views) {
-        await connection.query('DELETE FROM text_notes WHERE id = ?', [noteId]);
-        console.log(`Purged secure text note ID ${noteId} completely from database records.`);
+        await connection.query('UPDATE text_notes SET expired_at = COALESCE(expired_at, CURRENT_TIMESTAMP) WHERE id = ?', [noteId]);
       }
     }
     await connection.commit();

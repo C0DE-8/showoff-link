@@ -211,6 +211,7 @@ router.get('/stream-voice/:id', async (req, res) => {
         vn.allowed_plays, 
         vn.current_plays, 
         vn.recipient_id,
+        vn.expired_at,
         u.tagname AS intended_recipient_tagname,
         COALESCE(
           vn.skin_id,
@@ -257,14 +258,15 @@ router.get('/stream-voice/:id', async (req, res) => {
     // those must remain available even when the play limit has just been reached.
     const isInitialRequest = !range || range.startsWith('bytes=0-');
     if (isInitialRequest) {
-      if (row.current_plays >= row.allowed_plays) {
+      if (row.expired_at || row.current_plays >= row.allowed_plays) {
         return res.status(410).json({ error: 'This audio has already self-destructed.' });
       }
 
       const [updateResult] = await pool.query(
         `UPDATE voice_notes
-         SET current_plays = current_plays + 1
-         WHERE id = ? AND current_plays < allowed_plays`,
+         SET expired_at = IF(current_plays + 1 >= allowed_plays, COALESCE(expired_at, CURRENT_TIMESTAMP), expired_at),
+           current_plays = current_plays + 1
+         WHERE id = ? AND current_plays < allowed_plays AND expired_at IS NULL`,
         [audioId]
       );
 
@@ -319,7 +321,10 @@ router.post('/register-play/:id', async (req, res) => {
 
   try {
     const [updateRes] = await pool.query(
-      'UPDATE voice_notes SET current_plays = current_plays + 1 WHERE id = ?',
+        `UPDATE voice_notes
+         SET expired_at = IF(current_plays + 1 >= allowed_plays, COALESCE(expired_at, CURRENT_TIMESTAMP), expired_at),
+           current_plays = current_plays + 1
+         WHERE id = ? AND expired_at IS NULL AND current_plays < allowed_plays`,
       [audioId]
     );
 
@@ -330,8 +335,7 @@ router.post('/register-play/:id', async (req, res) => {
       );
       const state = stateRows[0];
       if (state.current_plays >= state.allowed_plays) {
-        await pool.query('DELETE FROM voice_notes WHERE id = ?', [audioId]);
-        console.log(`Purged voice note ID ${audioId} from storage database.`);
+        await pool.query('UPDATE voice_notes SET expired_at = COALESCE(expired_at, CURRENT_TIMESTAMP) WHERE id = ?', [audioId]);
       }
     }
     res.json({ success: true });
