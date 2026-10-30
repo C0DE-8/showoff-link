@@ -1,13 +1,75 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FiArrowUpRight, FiHeart, FiImage, FiMic, FiPlus, FiShare2, FiStar, FiType, FiZap } from 'react-icons/fi'
+import { FiArrowUpRight, FiGift, FiImage, FiMic, FiSettings, FiShoppingBag, FiType, FiZap } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
 import * as userApi from '../../api/user'
-import StatCard from '../../components/ui/StatCard'
 
 export default function Dashboard() {
-  const { user } = useAuth(); const [profile, setProfile] = useState(user); const [error, setError] = useState('')
-  useEffect(() => { userApi.getProfile().then(({ data }) => setProfile(data.profile)).catch(() => setError('Your profile could not be refreshed.')); }, [])
+  const { user } = useAuth()
+  const [profile, setProfile] = useState(user)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    userApi.getProfile()
+      .then(({ data }) => setProfile(data.profile))
+      .catch(() => setError('Your profile could not be refreshed.'))
+  }, [])
+
   const firstName = profile?.full_name?.split(' ')[0] || 'friend'
-  return <><section className="welcome-panel"><div><div className="section-kicker">A GOOD DAY TO MAKE SOMEONE SMILE</div><h2>Hey, {firstName}<span className="welcome-star"><FiStar /></span></h2><p>Your next thoughtful moment is just a few clicks away.</p></div><div className="welcome-illustration"><span><FiStar /></span><span><FiHeart /></span><span><FiStar /></span></div></section>{error && <p className="inline-error">{error}</p>}<div className="stats-grid"><StatCard icon={FiZap} label="TOKEN BALANCE" value={profile?.tokens ?? '—'} hint="Ready when you are"/><StatCard icon={FiShare2} label="YOUR PERSONAL TAG" value={`@${profile?.tagname || '…'}`} hint="Easy to find, easy to share" tone="peach"/></div><section className="dashboard-section"><div className="section-title-row"><div><div className="section-kicker">START WITH A FEELING</div><h3>What would you like to send?</h3></div><span className="soft-chip">Made personal, in minutes</span></div><div className="create-grid"><article className="create-card create-note"><div className="create-icon"><FiType /></div><div className="create-tag">SAY IT IN YOUR WORDS</div><h4>A little note</h4><p>Share a thought that deserves its own moment.</p><Link to="/create/note" className="round-arrow" aria-label="Create note"><FiArrowUpRight /></Link></article><article className="create-card create-photo"><div className="create-icon"><FiImage /></div><div className="create-tag">SAVE THE FEELING</div><h4>A favorite photo</h4><p>Turn a memory into something they can open.</p><Link to="/create/image" className="round-arrow" aria-label="Share photo"><FiArrowUpRight /></Link></article><article className="create-card create-voice"><div className="create-icon"><FiMic /></div><div className="create-tag">LET THEM HEAR YOU</div><h4>A voice hello</h4><p>Some things are sweeter when they’re spoken.</p><Link to="/create/voice" className="round-arrow" aria-label="Record voice"><FiArrowUpRight /></Link></article></div></section><section className="dashboard-lower"><div className="tip-card"><span className="tip-flower"><FiStar /></span><div><div className="section-kicker">A LITTLE TIP</div><h3>It’s the personal touches.</h3><p>Add their tag so your note is just for them, or let it be a surprise anyone can open.</p></div></div><div className="wallet-card"><div className="wallet-top"><span className="section-kicker">YOUR LITTLE CREATION FUND</span><span className="wallet-icon"><FiZap /></span></div><strong>{profile?.tokens ?? '—'} <small>tokens</small></strong><p>Top up when inspiration strikes.</p><Link className="button button-dark" to="/tokens"><FiPlus /> Get more tokens</Link></div></section></>
+
+  return (
+    <div className="dashboard-home">
+      <header className="dashboard-greeting">
+        <div>
+          <div className="section-kicker">YOUR SPACE</div>
+          <h2>Welcome back, {firstName}</h2>
+          <p>Make a small moment feel personal.</p>
+        </div>
+        <span className="dashboard-tag-pill">@{profile?.tagname || '…'}</span>
+      </header>
+
+      {error && <p className="inline-error" role="status">{error}</p>}
+
+      <section className="balance-card-react" aria-label="Available token balance">
+        <div className="balance-card-copy">
+          <span className="balance-label-react">Available balance</span>
+          <strong className="balance-amount-react">{profile?.tokens ?? '—'} <small>tokens</small></strong>
+        </div>
+        <div className="balance-actions-react">
+          <Link className="balance-action-primary" to="/tokens"><FiZap /> Top up</Link>
+          <Link className="balance-action" to="/gift-tokens"><FiGift /> Gift</Link>
+          <Link className="balance-action" to="/skins"><FiShoppingBag /> Store</Link>
+        </div>
+      </section>
+
+      <section className="dashboard-bento-section">
+        <div className="dashboard-section-heading">
+          <div className="section-kicker">MAKE A MOMENT</div>
+          <h3>What would you like to send?</h3>
+        </div>
+        <div className="dashboard-bento-grid">
+          <Link to="/create/note" className="dashboard-bento-card bento-note">
+            <span className="bento-card-icon"><FiType /></span>
+            <span className="bento-card-copy"><span className="bento-card-label">TEXT CAPSULE</span><strong>Write a note</strong><small>Send words made just for them.</small></span>
+            <FiArrowUpRight className="bento-card-arrow" />
+          </Link>
+          <Link to="/create/image" className="dashboard-bento-card bento-image">
+            <span className="bento-card-icon"><FiImage /></span>
+            <span className="bento-card-copy"><span className="bento-card-label">IMAGE CANVAS</span><strong>Share a photo</strong><small>Wrap a favorite memory.</small></span>
+            <FiArrowUpRight className="bento-card-arrow" />
+          </Link>
+          <Link to="/create/voice" className="dashboard-bento-card bento-voice">
+            <span className="bento-card-icon"><FiMic /></span>
+            <span className="bento-card-copy"><span className="bento-card-label">VOICE NOTE</span><strong>Record a hello</strong><small>Let them hear it from you.</small></span>
+            <FiArrowUpRight className="bento-card-arrow" />
+          </Link>
+          <Link to="/profile" className="dashboard-bento-card bento-profile">
+            <span className="bento-card-icon"><FiSettings /></span>
+            <span className="bento-card-copy"><span className="bento-card-label">YOUR ACCOUNT</span><strong>Profile &amp; settings</strong><small>Manage your personal space.</small></span>
+            <FiArrowUpRight className="bento-card-arrow" />
+          </Link>
+        </div>
+      </section>
+    </div>
+  )
 }

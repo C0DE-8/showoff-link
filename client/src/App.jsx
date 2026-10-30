@@ -40,10 +40,10 @@ function AppRoutes() {
       <Route path="/terms" element={<StaticPage kind="terms" />} />
       <Route path="/privacy" element={<StaticPage kind="privacy" />} />
       <Route path="/credits" element={<StaticPage kind="credits" />} />
-      <Route path="/note/:id" element={<ContentView type="note" />} />
-      <Route path="/image/:id" element={<ContentView type="image" />} />
-      <Route path="/voice/:id" element={<ContentView type="voice" />} />
     </Route>
+    <Route path="/note/:id" element={<ContentView type="note" />} />
+    <Route path="/image/:id" element={<ContentView type="image" />} />
+    <Route path="/voice/:id" element={<ContentView type="voice" />} />
     <Route path="/dashboard" element={<Protected><AppLayout /></Protected>}><Route index element={<Dashboard />} /></Route>
     <Route path="/create/:type" element={<Protected><AppLayout /></Protected>}><Route index element={<CreateContent />} /></Route>
     <Route path="/profile" element={<Protected><AppLayout /></Protected>}><Route index element={<Profile />} /></Route>

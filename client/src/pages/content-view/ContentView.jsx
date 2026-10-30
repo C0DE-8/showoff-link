@@ -16,10 +16,33 @@ export default function ContentView({ type }) {
   const skinObjectUrlRef = useRef('')
 
   useEffect(() => {
-    let objectUrl
-    let skinObjectUrl
+    let contentObjectUrl = ''
+    let skinObjectUrl = ''
     let cancelled = false
+
+    const loadSkin = async (skinId) => {
+      if (!skinId) return ''
+      try {
+        const response = await skinApi.getPublicSkin(skinId)
+        const objectUrl = URL.createObjectURL(response.data)
+        if (cancelled) {
+          URL.revokeObjectURL(objectUrl)
+          return ''
+        }
+        skinObjectUrl = objectUrl
+        skinObjectUrlRef.current = objectUrl
+        setSkinImage(objectUrl)
+        return objectUrl
+      } catch {
+        return ''
+      }
+    }
+
     const load = async () => {
+      setContent(null)
+      setError('')
+      setImageUrl('')
+      setSkinImage('')
       try {
         if (type === 'note') {
           const { data } = await noteApi.readNote(id)
@@ -29,103 +52,90 @@ export default function ContentView({ type }) {
           }
         } else if (type === 'image') {
           const response = await imageApi.viewImage(id)
-          const { data } = response
-          objectUrl = URL.createObjectURL(data)
-          const skinId = response.headers['x-skin-id']
-          if (skinId) {
-            try {
-              const skinResponse = await skinApi.getPublicSkin(skinId)
-              skinObjectUrl = URL.createObjectURL(skinResponse.data)
-            } catch {
-              skinObjectUrl = ''
-            }
-          }
+          contentObjectUrl = URL.createObjectURL(response.data)
           if (!cancelled) {
-            setImageUrl(objectUrl)
-            if (skinObjectUrl) {
-              skinObjectUrlRef.current = skinObjectUrl
-              setSkinImage(skinObjectUrl)
-            }
+            setImageUrl(contentObjectUrl)
             setContent({})
-          } else {
-            if (objectUrl) URL.revokeObjectURL(objectUrl)
-            if (skinObjectUrl) URL.revokeObjectURL(skinObjectUrl)
           }
+          await loadSkin(response.headers['x-skin-id'])
         } else {
           if (!cancelled) setContent({ audioId: id })
           try {
             const { data } = await audioApi.getVoiceSkin(id)
-            if (!cancelled && data.skin_id) {
-              const response = await skinApi.getPublicSkin(data.skin_id)
-              const nextSkinUrl = URL.createObjectURL(response.data)
-              if (!cancelled) {
-                skinObjectUrl = nextSkinUrl
-                skinObjectUrlRef.current = nextSkinUrl
-                setSkinImage(nextSkinUrl)
-              } else {
-                URL.revokeObjectURL(nextSkinUrl)
-              }
-            }
+            await loadSkin(data.skin_id)
           } catch {
-            // The share page and audio remain available when its optional skin is missing.
+            // Voice playback remains available when the optional skin is missing.
           }
         }
       } catch (loadError) {
-        if (!cancelled) setError(loadError.response?.data?.error || 'This link may have expired or is only available to its recipient.')
+        if (!cancelled) {
+          setError(loadError.response?.data?.error || 'This link may have expired or is only available to its recipient.')
+        }
       }
     }
+
     load()
     return () => {
       cancelled = true
-      if (objectUrl) URL.revokeObjectURL(objectUrl)
+      if (contentObjectUrl) URL.revokeObjectURL(contentObjectUrl)
       if (skinObjectUrl) URL.revokeObjectURL(skinObjectUrl)
-      if (skinObjectUrlRef.current) {
-        URL.revokeObjectURL(skinObjectUrlRef.current)
-        skinObjectUrlRef.current = ''
-      }
+      if (skinObjectUrlRef.current === skinObjectUrl) skinObjectUrlRef.current = ''
     }
   }, [id, type])
 
-  const icon = type === 'note' ? <FiType /> : type === 'image' ? <FiImage /> : <FiMic />
   const loadVoice = async () => {
     const result = await audioApi.fetchVoice(content.audioId)
-    if (result.skinId) {
-      skinApi.getPublicSkin(result.skinId).then((response) => {
-        const nextSkinUrl = URL.createObjectURL(response.data)
-        if (skinObjectUrlRef.current) URL.revokeObjectURL(skinObjectUrlRef.current)
-        skinObjectUrlRef.current = nextSkinUrl
-        setSkinImage(nextSkinUrl)
-      }).catch(() => {})
+    if (result.skinId && !skinObjectUrlRef.current) {
+      loadSkinAfterPlayback(result.skinId)
     }
     return result.url
   }
+
+  const loadSkinAfterPlayback = async (skinId) => {
+    try {
+      const response = await skinApi.getPublicSkin(skinId)
+      const nextSkinUrl = URL.createObjectURL(response.data)
+      if (skinObjectUrlRef.current) URL.revokeObjectURL(skinObjectUrlRef.current)
+      skinObjectUrlRef.current = nextSkinUrl
+      setSkinImage(nextSkinUrl)
+    } catch {
+      // Voice playback remains available when the optional skin is missing.
+    }
+  }
+
+  const icon = type === 'note' ? <FiType /> : type === 'image' ? <FiImage /> : <FiMic />
+  const headings = { note: 'A little note', image: 'A favorite moment', voice: 'A voice hello' }
+  const stageStyle = skinImage ? {
+    backgroundImage: `linear-gradient(rgba(12, 11, 17, .18), rgba(12, 11, 17, .32)), url("${skinImage}")`
+  } : undefined
+
   return (
-    <main className={`content-view-page ${skinImage ? 'has-shared-skin' : ''}`} style={skinImage ? { backgroundImage: `linear-gradient(rgba(17, 16, 25, .68), rgba(17, 16, 25, .78)), url("${skinImage}")` } : undefined}>
-      <a className="brand view-brand" href="/" aria-label="Showoff Links home"><span className="brand-mark">s.</span><span>showoff<span className="brand-muted">links</span></span></a>
-      <article className={`view-card ${type === 'voice' ? 'voice-view-card' : ''}`}>
-        <div className="view-card-icon">{icon}</div>
-        {error ? <>
-          <FiAlertCircle className="view-error-icon" />
-          <h1>Moment unavailable</h1>
-          <p>{error}</p>
-        </> : !content ? <>
-          <span className="spinner" />
-          <p>Opening something made for you…</p>
-        </> : <>
-          <div className="section-kicker">A MOMENT, JUST FOR YOU</div>
-          <h1>{type === 'note' ? 'A little note' : type === 'image' ? 'A favorite moment' : 'A voice hello'}</h1>
-          {type === 'note' && <>
-            <div className="note-content">{content.note_content}</div>
-            <small className="view-count">This note has been opened {content.current_views} of {content.allowed_views} times.</small>
-          </>}
-          {type === 'image' && <img className="shared-image" src={imageUrl} alt="A shared photo" />}
-          {type === 'voice' && <>
-            <p className="voice-player-prompt">A little hello, shared just with you.</p>
-            <AudioPlayer className="voice-player" loadSource={loadVoice} label="A voice hello" />
-          </>}
-          <div className="view-signoff">Sent with a little care · Showoff Links</div>
-        </>}
-      </article>
+    <main className={`share-view share-view-${type} ${skinImage ? 'has-share-skin' : ''}`} style={stageStyle}>
+      <div className="share-vignette" aria-hidden="true" />
+      <section className={`share-stage share-stage-${type}`} aria-live="polite">
+        {error ? (
+          <div className="share-error">
+            <FiAlertCircle />
+            <h1>Moment unavailable</h1>
+            <p>{error}</p>
+          </div>
+        ) : !content ? (
+          <div className="share-loading"><span className="spinner" /><p>Opening something made for you…</p></div>
+        ) : (
+          <>
+            <div className="share-type-icon" aria-hidden="true">{icon}</div>
+            <div className="share-eyebrow">A MOMENT, JUST FOR YOU</div>
+            <h1 className="share-heading">{headings[type]}</h1>
+            {type === 'note' && <blockquote className="share-quote">“{content.note_content}”</blockquote>}
+            {type === 'image' && <img className="share-image" src={imageUrl} alt="A photo shared just for you" />}
+            {type === 'voice' && <>
+              <p className="share-caption">A little hello, shared just with you.</p>
+              <AudioPlayer className="share-audio" loadSource={loadVoice} label="A voice hello" />
+            </>}
+            <div className="share-signoff">Sent with a little care</div>
+          </>
+        )}
+      </section>
     </main>
   )
 }
