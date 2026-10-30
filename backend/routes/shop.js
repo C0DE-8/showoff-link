@@ -42,6 +42,15 @@ router.post('/submit-request', protect(), async (req, res) => {
     return res.status(400).json({ error: 'Missing required request parameters.' });
   }
 
+  const receiptMatch = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(receiptUrl);
+  if (!receiptMatch) {
+    return res.status(400).json({ error: 'Upload a JPG, PNG, or WebP receipt image.' });
+  }
+  const receiptBytes = Buffer.from(receiptMatch[2], 'base64');
+  if (receiptBytes.length > 10 * 1024 * 1024) {
+    return res.status(413).json({ error: 'Receipt images must be 10 MB or smaller.' });
+  }
+
   const requestedTokens = Number(tokensRequested);
   const requestedAmount = Number(amountNgn);
   if (!Number.isInteger(requestedTokens) || tokenPackages.get(requestedTokens) !== requestedAmount) {

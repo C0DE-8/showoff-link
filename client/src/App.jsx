@@ -19,6 +19,7 @@ import StaticPage from './pages/static/StaticPage'
 import RecoverPassword from './pages/recover-password/RecoverPassword'
 import MyLinks from './pages/my-links/MyLinks'
 import { ToastProvider } from './context/ToastContext'
+import SiteMusicToggle from './components/media/SiteMusicToggle'
 import './App.css'
 import './theme.css'
 
@@ -58,5 +59,5 @@ function AppRoutes() {
 }
 
 export default function App() {
-  return <AuthProvider><ToastProvider><AppRoutes /></ToastProvider></AuthProvider>
+  return <AuthProvider><ToastProvider><AppRoutes /><SiteMusicToggle /></ToastProvider></AuthProvider>
 }
