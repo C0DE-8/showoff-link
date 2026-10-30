@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { FiAlertCircle, FiImage, FiMic, FiType } from 'react-icons/fi'
+import { FiAlertCircle } from 'react-icons/fi'
 import * as noteApi from '../../api/note'
 import * as imageApi from '../../api/image'
 import * as audioApi from '../../api/audio'
@@ -103,8 +103,6 @@ export default function ContentView({ type }) {
     }
   }
 
-  const icon = type === 'note' ? <FiType /> : type === 'image' ? <FiImage /> : <FiMic />
-  const headings = { note: 'A little note', image: 'A favorite moment', voice: 'A voice hello' }
   const stageStyle = skinImage ? {
     backgroundImage: `linear-gradient(rgba(12, 11, 17, .18), rgba(12, 11, 17, .32)), url("${skinImage}")`
   } : undefined
@@ -123,13 +121,9 @@ export default function ContentView({ type }) {
           <div className="share-loading"><span className="spinner" /><p>Opening something made for you…</p></div>
         ) : (
           <>
-            <div className="share-type-icon" aria-hidden="true">{icon}</div>
-            <div className="share-eyebrow">A MOMENT, JUST FOR YOU</div>
-            <h1 className="share-heading">{headings[type]}</h1>
             {type === 'note' && <blockquote className="share-quote">“{content.note_content}”</blockquote>}
             {type === 'image' && <img className="share-image" src={imageUrl} alt="A photo shared just for you" />}
             {type === 'voice' && <>
-              <p className="share-caption">A little hello, shared just with you.</p>
               <AudioPlayer className="share-audio" loadSource={loadVoice} label="A voice hello" />
             </>}
             <div className="share-signoff">Sent with a little care</div>
