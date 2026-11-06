@@ -124,9 +124,9 @@ export default function ContentView({ type }) {
             {type === 'note' && <blockquote className="share-quote">“{content.note_content}”</blockquote>}
             {type === 'image' && <img className="share-image" src={imageUrl} alt="A photo shared just for you" />}
             {type === 'voice' && <>
-              <AudioPlayer className="share-audio" loadSource={loadVoice} label="A voice hello" />
+              <AudioPlayer className="share-audio" loadSource={loadVoice} label="A voice hello" showLabel={false} />
             </>}
-            <div className="share-signoff">Sent with a little care</div>
+            {type !== 'voice' && <div className="share-signoff">Sent with a little care</div>}
           </>
         )}
       </section>

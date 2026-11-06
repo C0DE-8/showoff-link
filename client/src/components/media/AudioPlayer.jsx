@@ -7,7 +7,7 @@ function formatTime(value) {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
 }
 
-export default function AudioPlayer({ src, loadSource, label = 'Voice recording', className = '' }) {
+export default function AudioPlayer({ src, loadSource, label = 'Voice recording', className = '', showLabel = true }) {
   const audioRef = useRef(null)
   const loadedUrlRef = useRef('')
   const [duration, setDuration] = useState(0)
@@ -76,7 +76,7 @@ export default function AudioPlayer({ src, loadSource, label = 'Voice recording'
         {playing ? <FiPause /> : loading ? <span className="audio-loading-dot" /> : <FiPlay />}
       </button>
       <div className="audio-player-main">
-        <div className="audio-player-title">{label}</div>
+        {showLabel && <div className="audio-player-title">{label}</div>}
         <input
           className="audio-seek"
           type="range"
