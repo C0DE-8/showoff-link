@@ -126,7 +126,6 @@ export default function ContentView({ type }) {
             {type === 'voice' && <>
               <AudioPlayer className="share-audio" loadSource={loadVoice} label="A voice hello" showLabel={false} />
             </>}
-            {type !== 'voice' && <div className="share-signoff">Sent with a little care</div>}
           </>
         )}
       </section>
