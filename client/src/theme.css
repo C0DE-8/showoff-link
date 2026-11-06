@@ -223,16 +223,29 @@ body,
 }
 
 .preview-overlay .audio-player {
+  width: 100%;
   max-width: 480px;
-  padding: 16px;
-  border-color: rgba(255, 255, 255, .14);
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 12px;
   background: #211e2c;
   color: #f5f3ff;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .04);
 }
 
+.preview-overlay .audio-play-button {
+  width: 46px;
+  height: 46px;
+  background: #8d72b8;
+  box-shadow: 0 0 0 4px rgba(192, 132, 252, .12);
+}
+
+.preview-overlay .audio-play-button:hover:not(:disabled) { background: #a285d0; }
 .preview-overlay .audio-player-title { color: #f5f3ff; }
 .preview-overlay .audio-time { color: #b7abc9; }
-.preview-overlay .audio-seek { background: linear-gradient(to right, #c084fc var(--audio-progress), #4b4658 var(--audio-progress)); }
+.preview-overlay .audio-seek { background: linear-gradient(to right, #c084fc var(--audio-progress), #514a60 var(--audio-progress)); }
+.preview-overlay .audio-seek:focus-visible { outline: 2px solid #d8b4fe; outline-offset: 4px; }
 .preview-overlay .audio-volume-icon { color: #c4b8d8; }
 
 @media (max-width: 560px) {
@@ -378,6 +391,81 @@ input:focus-visible { outline-color: #c084fc; }
 .site-music-toggle:hover { transform: translateY(-2px); border-color: #c084fc; }
 .site-music-toggle.is-playing { background: rgba(126, 34, 206, .84); }
 .site-music-toggle svg { flex: none; font-size: 16px; }
+
+.admin-welcome h2,
+.admin-panel .panel-heading h3,
+.admin-panel table td,
+.admin-panel .member-cell strong,
+.admin-panel .table-count {
+  color: #f7f5ff;
+}
+
+.admin-welcome p,
+.admin-panel .panel-heading p,
+.admin-panel .member-cell small,
+.admin-panel .table-sub,
+.admin-panel .table-loading,
+.admin-panel .empty-state,
+.admin-panel .bank-details span,
+.admin-panel .skin-card-bottom span {
+  color: #c9c2d6;
+}
+
+.admin-welcome .section-kicker,
+.admin-panel .section-kicker {
+  color: #c1b2dc;
+}
+
+.admin-panel table th {
+  color: #c9c2d6;
+  border-bottom-color: rgba(255, 255, 255, .18);
+}
+
+.admin-panel table td,
+.admin-panel table tr {
+  border-color: rgba(255, 255, 255, .12);
+}
+
+.admin-panel .workspace-form > label,
+.admin-panel .skin-form label,
+.admin-panel .payment-settings-form label {
+  color: #eeeaf6;
+}
+
+.admin-panel .workspace-form small,
+.admin-panel .skin-form small {
+  color: #bdb4ce;
+}
+
+.admin-panel .bank-details strong,
+.admin-panel .skin-card-bottom strong {
+  color: #f7f5ff;
+}
+
+.admin-panel .table-count {
+  background: rgba(192, 132, 252, .12);
+  border-color: rgba(192, 132, 252, .28);
+}
+
+.admin-panel .status-good {
+  background: rgba(95, 160, 117, .2);
+  color: #b8efc5;
+}
+
+.admin-panel .status-pending {
+  background: rgba(224, 169, 91, .2);
+  color: #ffdda2;
+}
+
+.admin-panel .role-pill {
+  background: rgba(255, 255, 255, .09);
+  color: #e7e0f1;
+}
+
+.admin-panel .role-pill.role-admin {
+  background: rgba(192, 132, 252, .18);
+  color: #e6caff;
+}
 
 .receipt-file-input {
   position: absolute;

@@ -46,7 +46,29 @@ app.use("/api/skin", skinRouter);
 
 app.use((req, res) => {
   if (req.accepts('html')) {
-    return res.status(404).sendFile(path.join(publicDirectory, '404.html'));
+    return res.status(404).type('html').send(`<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Page not found | Showoff Links</title>
+    <style>
+      :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #111019; color: #f5f3ff; }
+      body { min-height: 100vh; margin: 0; display: grid; place-items: center; }
+      main { max-width: 420px; padding: 32px; text-align: center; }
+      h1 { margin: 0 0 10px; font-size: 30px; }
+      p { margin: 0 0 24px; color: #c4b8d8; line-height: 1.6; }
+      a { display: inline-block; padding: 11px 16px; border-radius: 8px; background: #c084fc; color: #1b1025; font-weight: 700; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Page not found</h1>
+      <p>The link may be incorrect or this page is no longer available.</p>
+      <a href="/">Back to Showoff Links</a>
+    </main>
+  </body>
+</html>`);
   }
   res.status(404).json({ error: 'Not found.' });
 });
