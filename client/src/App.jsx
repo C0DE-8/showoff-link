@@ -7,6 +7,7 @@ import Login from './pages/login/Login'
 import Register from './pages/register/Register'
 import Dashboard from './pages/dashboard/Dashboard'
 import Admin from './pages/admin/Admin'
+import AdminSkins from './pages/admin/AdminSkins'
 import NotFound from './pages/not-found/NotFound'
 import CreateContent from './pages/create-content/CreateContent'
 import Profile from './pages/profile/Profile'
@@ -54,6 +55,7 @@ function AppRoutes() {
     <Route path="/skins" element={<Protected><AppLayout /></Protected>}><Route index element={<SkinShop />} /></Route>
     <Route path="/skins/inventory" element={<Protected><AppLayout /></Protected>}><Route index element={<SkinInventory />} /></Route>
     <Route path="/admin" element={<Protected admin><AppLayout admin /></Protected>}><Route index element={<Admin />} /></Route>
+    <Route path="/admin/skins" element={<Protected admin><AppLayout admin /></Protected>}><Route index element={<AdminSkins />} /></Route>
     <Route path="*" element={<NotFound />} />
   </Routes>
 }

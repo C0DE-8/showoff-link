@@ -336,6 +336,13 @@ input:focus-visible { outline-color: #c084fc; }
 .bento-card-arrow { position: absolute; top: 20px; right: 18px; color: rgba(255,255,255,.7); font-size: 16px; }
 
 .share-view { position: fixed; inset: 0; z-index: 20; min-height: 100dvh; padding: max(42px, env(safe-area-inset-top)) 24px max(34px, env(safe-area-inset-bottom)); display: grid; place-items: center; overflow: auto; isolation: isolate; color: #fff; background-color: #111019; background-position: center; background-repeat: no-repeat; background-size: cover; }
+.share-back-button { position: fixed; top: max(18px, env(safe-area-inset-top)); left: 18px; z-index: 30; display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 14px; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; color: #fff; background: rgba(12,11,17,.72); box-shadow: 0 10px 30px rgba(0,0,0,.28); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); font: 700 12px/1 system-ui,sans-serif; cursor: pointer; }
+.share-back-button:hover { background: rgba(12,11,17,.88); border-color: rgba(255,255,255,.38); }
+.share-back-button:focus-visible { outline: 3px solid rgba(192,132,252,.75); outline-offset: 3px; }
+.admin-skin-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.admin-skin-actions { display: flex; gap: 6px; }
+.admin-skin-edit { width: min(520px, calc(100vw - 32px)); }
+.admin-skin-edit-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
 .share-view.has-share-skin { background-attachment: fixed; }
 .share-vignette { position: fixed; inset: 0; z-index: -1; background: radial-gradient(ellipse at center, rgba(7,6,12,.12), rgba(7,6,12,.58)); pointer-events: none; }
 .share-stage { position: relative; z-index: 1; width: min(100%, 620px); min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }

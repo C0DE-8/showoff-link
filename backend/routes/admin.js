@@ -165,4 +165,54 @@ router.post('/admin/upload-skin', protect(['admin']), upload.single('skinGraphic
   }
 });
 
+// PATCH /api/admin/skins/:skinId — update a platform skin.
+router.patch('/skins/:skinId', protect(['admin']), upload.single('skinGraphic'), async (req, res) => {
+  const pool = req.app.get('pool');
+  const { skinId } = req.params;
+  const name = typeof req.body.name === 'string' ? req.body.name.trim() : '';
+  const tokenCost = Number.parseInt(req.body.token_cost, 10);
+
+  if (!name) return res.status(400).json({ error: 'Skin name is required.' });
+  if (!Number.isInteger(tokenCost) || tokenCost < 0) {
+    return res.status(400).json({ error: 'Token cost must be zero or greater.' });
+  }
+
+  try {
+    const [skins] = await pool.query('SELECT id FROM platform_skins WHERE id = ?', [skinId]);
+    if (!skins.length) return res.status(404).json({ error: 'Skin not found.' });
+
+    if (req.file) {
+      await pool.query(
+        'UPDATE platform_skins SET name = ?, token_cost = ?, image_data = ?, mime_type = ? WHERE id = ?',
+        [name, tokenCost, req.file.buffer, req.file.mimetype, skinId]
+      );
+    } else {
+      await pool.query(
+        'UPDATE platform_skins SET name = ?, token_cost = ? WHERE id = ?',
+        [name, tokenCost, skinId]
+      );
+    }
+    return res.json({ success: true, message: 'Skin updated successfully.' });
+  } catch (err) {
+    console.error('Admin skin update failed:', err);
+    return res.status(500).json({ error: 'Unable to update skin.' });
+  }
+});
+
+// DELETE /api/admin/skins/:skinId — remove a platform skin and ownership records.
+router.delete('/skins/:skinId', protect(['admin']), async (req, res) => {
+  const pool = req.app.get('pool');
+  try {
+    const [skins] = await pool.query('SELECT id FROM platform_skins WHERE id = ?', [req.params.skinId]);
+    if (!skins.length) return res.status(404).json({ error: 'Skin not found.' });
+
+    await pool.query('DELETE FROM user_skins WHERE skin_id = ?', [req.params.skinId]);
+    await pool.query('DELETE FROM platform_skins WHERE id = ?', [req.params.skinId]);
+    return res.json({ success: true, message: 'Skin deleted successfully.' });
+  } catch (err) {
+    console.error('Admin skin deletion failed:', err);
+    return res.status(500).json({ error: 'Unable to delete skin.' });
+  }
+});
+
 module.exports=router

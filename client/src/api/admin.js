@@ -6,3 +6,5 @@ export const setUserTokens = (userId, tokens) => http.patch(`/api/admin/users/${
 export const resetUserPassword = (userId, newPassword) => http.patch(`/api/admin/users/${encodeURIComponent(userId)}/password`, { newPassword })
 export const deleteUser = (userId) => http.delete(`/api/admin/users/${encodeURIComponent(userId)}`)
 export const uploadSkin = (formData) => http.post('/api/admin/admin/upload-skin', formData)
+export const updateSkin = (skinId, formData) => http.patch(`/api/admin/skins/${encodeURIComponent(skinId)}`, formData)
+export const deleteSkin = (skinId) => http.delete(`/api/admin/skins/${encodeURIComponent(skinId)}`)

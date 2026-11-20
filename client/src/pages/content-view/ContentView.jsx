@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { FiAlertCircle } from 'react-icons/fi'
+import { useNavigate, useParams } from 'react-router-dom'
+import { FiAlertCircle, FiArrowLeft } from 'react-icons/fi'
 import * as noteApi from '../../api/note'
 import * as imageApi from '../../api/image'
 import * as audioApi from '../../api/audio'
 import * as skinApi from '../../api/skin'
 import AudioPlayer from '../../components/media/AudioPlayer'
+import { useAuth } from '../../context/AuthContext'
 
 export default function ContentView({ type }) {
   const { id } = useParams()
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const [content, setContent] = useState(null)
   const [error, setError] = useState('')
   const [imageUrl, setImageUrl] = useState('')
@@ -109,6 +112,14 @@ export default function ContentView({ type }) {
 
   return (
     <main className={`share-view share-view-${type} ${skinImage ? 'has-share-skin' : ''}`} style={stageStyle}>
+      <button
+        type="button"
+        className="share-back-button"
+        onClick={() => navigate(user ? '/dashboard' : '/login')}
+      >
+        <FiArrowLeft />
+        <span>{user ? 'Back to dashboard' : 'Back to login'}</span>
+      </button>
       <div className="share-vignette" aria-hidden="true" />
       <section className={`share-stage share-stage-${type}`} aria-live="polite">
         {error ? (
