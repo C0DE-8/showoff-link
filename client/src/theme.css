@@ -336,8 +336,8 @@ input:focus-visible { outline-color: #c084fc; }
 .bento-card-arrow { position: absolute; top: 20px; right: 18px; color: rgba(255,255,255,.7); font-size: 16px; }
 
 .share-view { position: fixed; inset: 0; z-index: 20; min-height: 100dvh; padding: max(42px, env(safe-area-inset-top)) 24px max(34px, env(safe-area-inset-bottom)); display: grid; place-items: center; overflow: auto; isolation: isolate; color: #fff; background-color: #111019; background-position: center; background-repeat: no-repeat; background-size: cover; }
-.share-back-button { position: fixed; top: max(18px, env(safe-area-inset-top)); left: 18px; z-index: 30; display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 14px; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; color: #fff; background: rgba(12,11,17,.72); box-shadow: 0 10px 30px rgba(0,0,0,.28); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); font: 700 12px/1 system-ui,sans-serif; cursor: pointer; }
-.share-back-button:hover { background: rgba(12,11,17,.88); border-color: rgba(255,255,255,.38); }
+.share-back-button { position: fixed; top: max(18px, env(safe-area-inset-top)); left: 18px; z-index: 30; display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid rgba(255,255,255,.28); border-radius: 50%; color: #fff; background: rgba(12,11,17,.76); box-shadow: 0 10px 30px rgba(0,0,0,.32); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); font-size: 19px; cursor: pointer; transition: background .18s ease, transform .18s ease, border-color .18s ease; }
+.share-back-button:hover { background: rgba(12,11,17,.92); border-color: rgba(255,255,255,.48); transform: translateX(-2px); }
 .share-back-button:focus-visible { outline: 3px solid rgba(192,132,252,.75); outline-offset: 3px; }
 .admin-skin-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 .admin-skin-actions { display: flex; gap: 6px; }
@@ -534,6 +534,7 @@ input:focus-visible { outline-color: #c084fc; }
   .bento-card-copy small { font-size: 9px; }
   .bento-card-arrow { top: 16px; right: 13px; font-size: 14px; }
   .share-view { padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); }
+  .share-back-button { top: max(12px, env(safe-area-inset-top)); left: 12px; width: 48px; height: 48px; font-size: 21px; }
   .share-stage { min-height: 210px; }
   .share-heading { font-size: 23px; }
   .share-quote { font-size: 23px; line-height: 1.48; }

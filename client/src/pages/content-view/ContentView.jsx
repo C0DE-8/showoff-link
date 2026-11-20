@@ -115,10 +115,11 @@ export default function ContentView({ type }) {
       <button
         type="button"
         className="share-back-button"
+        aria-label={user ? 'Back to dashboard' : 'Back to login'}
+        title={user ? 'Back to dashboard' : 'Back to login'}
         onClick={() => navigate(user ? '/dashboard' : '/login')}
       >
         <FiArrowLeft />
-        <span>{user ? 'Back to dashboard' : 'Back to login'}</span>
       </button>
       <div className="share-vignette" aria-hidden="true" />
       <section className={`share-stage share-stage-${type}`} aria-live="polite">
