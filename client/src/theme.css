@@ -352,6 +352,10 @@ input:focus-visible { outline-color: #c084fc; }
 .share-quote { max-width: 600px; margin: 6px 0 24px; color: #fff; font: 700 30px/1.5 var(--heading); white-space: pre-wrap; overflow-wrap: anywhere; text-shadow: 0 2px 18px rgba(0,0,0,.55), 0 1px 3px rgba(0,0,0,.5); }
 .share-stage-note .share-quote { padding: 24px 26px; border: 1px solid rgba(255,255,255,.18); border-radius: 18px; background: rgba(12,11,17,.68); box-shadow: 0 18px 60px rgba(0,0,0,.38); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 .share-image { display: block; max-width: min(100%, 920px); max-height: min(70dvh, 760px); width: auto; height: auto; object-fit: contain; border-radius: 3px; box-shadow: 0 18px 60px rgba(0,0,0,.28); }
+.share-image-loading { width: min(100%, 920px); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.share-image-skeleton { display: block; width: 100%; aspect-ratio: 4 / 3; max-height: min(70dvh, 760px); border: 1px solid rgba(255,255,255,.2); border-radius: 8px; background: linear-gradient(110deg, rgba(255,255,255,.06) 8%, rgba(255,255,255,.16) 18%, rgba(255,255,255,.06) 33%); background-size: 200% 100%; box-shadow: 0 18px 60px rgba(0,0,0,.28); animation: share-image-shimmer 1.4s linear infinite; }
+.share-image-loading-text { color: rgba(255,255,255,.82); font-size: 12px; text-shadow: 0 1px 8px rgba(0,0,0,.5); }
+@keyframes share-image-shimmer { to { background-position-x: -200%; } }
 .share-view-image .share-stage { width: 100%; }
 .share-view-image .share-image { margin: 8px auto 16px; }
 .share-caption { margin: -4px 0 22px; color: rgba(255,255,255,.86); font-size: 12px; text-shadow: 0 2px 12px rgba(0,0,0,.45); }
@@ -473,6 +477,46 @@ input:focus-visible { outline-color: #c084fc; }
 .admin-panel .role-pill.role-admin {
   background: rgba(192, 132, 252, .18);
   color: #e6caff;
+}
+
+.token-shop-panel .package-card > span {
+  color: #d0c7df;
+  font-size: 11px;
+}
+
+.token-shop-panel .package-card strong small {
+  color: #c4b8d8;
+  font-size: 11px;
+}
+
+.token-shop-panel .bank-card-head {
+  color: #e4d7f6;
+  font-size: 10px;
+}
+
+.token-shop-panel .bank-details span {
+  color: #c4b8d8;
+  font-size: 11px;
+}
+
+.token-shop-panel .bank-details strong {
+  color: #f5f3ff;
+  font-size: 13px;
+}
+
+.token-shop-panel .bank-loading {
+  color: #c4b8d8;
+  font-size: 12px;
+}
+
+.token-shop-panel .workspace-form > label {
+  color: #e4dcef;
+  font-size: 12px;
+}
+
+.token-shop-panel .receipt-upload small {
+  color: #d0c7df;
+  font-size: 11px;
 }
 
 .receipt-file-input {

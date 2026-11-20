@@ -8,6 +8,20 @@ import * as skinApi from '../../api/skin'
 import AudioPlayer from '../../components/media/AudioPlayer'
 import { useAuth } from '../../context/AuthContext'
 
+function preloadImage(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve()
+    image.onerror = () => reject(new Error('This image could not be loaded.'))
+    image.src = src
+
+    if (image.complete) {
+      if (image.naturalWidth > 0) resolve()
+      else reject(new Error('This image could not be loaded.'))
+    }
+  })
+}
+
 export default function ContentView({ type }) {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -56,6 +70,7 @@ export default function ContentView({ type }) {
         } else if (type === 'image') {
           const response = await imageApi.viewImage(id)
           contentObjectUrl = URL.createObjectURL(response.data)
+          await preloadImage(contentObjectUrl)
           if (!cancelled) {
             setImageUrl(contentObjectUrl)
             setContent({})
@@ -106,12 +121,12 @@ export default function ContentView({ type }) {
     }
   }
 
-  const stageStyle = skinImage ? {
+  const stageStyle = skinImage && type !== 'image' ? {
     backgroundImage: `linear-gradient(rgba(12, 11, 17, .18), rgba(12, 11, 17, .32)), url("${skinImage}")`
   } : undefined
 
   return (
-    <main className={`share-view share-view-${type} ${skinImage ? 'has-share-skin' : ''}`} style={stageStyle}>
+    <main className={`share-view share-view-${type} ${skinImage && type !== 'image' ? 'has-share-skin' : ''}`} style={stageStyle}>
       <button
         type="button"
         className="share-back-button"
@@ -130,7 +145,12 @@ export default function ContentView({ type }) {
             <p>{error}</p>
           </div>
         ) : !content ? (
-          <div className="share-loading"><span className="spinner" /><p>Opening something made for you…</p></div>
+          type === 'image' ? (
+            <div className="share-image-loading" role="status" aria-label="Loading image">
+              <span className="share-image-skeleton" aria-hidden="true" />
+              <span className="share-image-loading-text">Loading image…</span>
+            </div>
+          ) : <div className="share-loading"><span className="spinner" /><p>Opening something made for you…</p></div>
         ) : (
           <>
             {type === 'note' && <blockquote className="share-quote">“{content.note_content}”</blockquote>}
